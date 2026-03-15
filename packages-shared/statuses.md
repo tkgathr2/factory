@@ -30,7 +30,9 @@ Loop stop reasons:
 - hard_limit -> stop loop, continue to Step 18
 - target_achieved -> stop loop, continue to Step 18
 - soft_limit_reached -> stop loop, continue to Step 18
-- diagram_rejected -> blocked, user rejected UI navigation diagram
+
+Diagram approval stop reasons:
+- diagram_rejected -> blocked, user rejected UI navigation diagram at Step 18
 
 RunReport phases:
 - pre_score

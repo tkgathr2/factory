@@ -568,10 +568,10 @@ components:
               type: string
             status:
               type: string
-                enum: [draft, queued, running, awaiting_approval, blocked, completed, ready_for_devin, failed]
-              progressPercent:
-                type: integer
-              currentStepKey:
+              enum: [draft, queued, running, awaiting_approval, blocked, completed, ready_for_devin, failed]
+            progressPercent:
+              type: integer
+            currentStepKey:
               type: [string, 'null']
             loopStatus:
               type: [string, 'null']

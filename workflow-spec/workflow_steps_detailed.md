@@ -202,12 +202,14 @@ Step failure condition:
 
 Post-step behavior:
 - On Step 18 success, project.status transitions to awaiting_approval
+- IMPORTANT: checkpointStepOrder is NOT updated to 18 at this point; it remains at the prior checkpoint (Step 17 or earlier)
+- This ensures that resume-after-rejection re-executes Step 18 via the standard resume policy (checkpointStepOrder + 1)
 - Workflow execution pauses (worker releases the run)
 - The UI navigation diagram PNG is presented to the user via the monitor UI
 - User calls POST /api/projects/{id}/approve-diagram with { "approved": true } or { "approved": false }
-- If approved: project.status transitions back to running, workflow resumes from Step 19
+- If approved: checkpointStepOrder is updated to 18, project.status transitions back to running, workflow resumes from Step 19
 - If rejected: project.status transitions to blocked, stopReason = "diagram_rejected"
-- Rejected projects can be resumed from blocked state; resume re-executes Step 18
+- Rejected projects can be resumed from blocked state; resume re-executes Step 18 (since checkpoint was not advanced)
 
 ## Step 19 export_spec
 Precondition: Step 18 must be approved (project must have transitioned through awaiting_approval → running via approve-diagram)
