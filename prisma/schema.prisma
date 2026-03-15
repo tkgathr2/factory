@@ -11,6 +11,7 @@ enum ProjectStatus {
   draft
   queued
   running
+  awaiting_approval
   blocked
   completed
   ready_for_devin

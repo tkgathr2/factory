@@ -261,6 +261,83 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+  /api/projects/{id}/approve-diagram:
+    post:
+      summary: Approve or reject UI navigation diagram
+      description: |
+        Called by the user after reviewing the UI navigation diagram generated at Step 18.
+        Only allowed when project.status is awaiting_approval.
+        On approval, workflow resumes from Step 19 (export_spec).
+        On rejection, project transitions to blocked with stopReason = diagram_rejected.
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApproveDiagramRequest'
+      responses:
+        '200':
+          description: Approval processed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApproveDiagramResponse'
+        '404':
+          description: Project not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Project is not in awaiting_approval state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/projects/{id}/export-zip:
+    get:
+      summary: Download specification bundle as ZIP
+      description: |
+        Returns the export_bundle ZIP file generated at Step 19.
+        Only available after Step 19 has completed successfully.
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+      responses:
+        '200':
+          description: ZIP file download
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Project or export bundle not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Export bundle not yet available
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
   /api/projects/{id}/loop-status:
     get:
       summary: Get loop status
@@ -457,7 +534,7 @@ components:
           type: string
         status:
           type: string
-          enum: [draft, queued, running, blocked, completed, ready_for_devin, failed]
+          enum: [draft, queued, running, awaiting_approval, blocked, completed, ready_for_devin, failed]
         progressPercent:
           type: integer
         loopCount:
@@ -491,10 +568,10 @@ components:
               type: string
             status:
               type: string
-              enum: [draft, queued, running, blocked, completed, ready_for_devin, failed]
-            progressPercent:
-              type: integer
-            currentStepKey:
+                enum: [draft, queued, running, awaiting_approval, blocked, completed, ready_for_devin, failed]
+              progressPercent:
+                type: integer
+              currentStepKey:
               type: [string, 'null']
             loopStatus:
               type: [string, 'null']
@@ -529,7 +606,7 @@ components:
           type: string
         status:
           type: string
-          enum: [draft, queued, running, blocked, completed, ready_for_devin, failed]
+          enum: [draft, queued, running, awaiting_approval, blocked, completed, ready_for_devin, failed]
         progressPercent:
           type: integer
         loopCount:
@@ -594,7 +671,7 @@ components:
           $ref: '#/components/schemas/RunReportProject'
         phase:
           type: string
-          enum: [pre_score, scoring_available, completed, blocked, failed]
+          enum: [pre_score, scoring_available, awaiting_approval, completed, blocked, failed]
           description: Prefer availableFields for rendering logic. `phase` is a coarse lifecycle label only. packages-shared/statuses.md RunReportPhase is the Source of Truth for the allowed values and OpenAPI must reuse those exact values.
         availableFields:
           type: array
@@ -721,6 +798,27 @@ components:
         description: { type: string }
         defaultEnabled: { type: boolean }
         priority: { type: integer }
+
+    ApproveDiagramRequest:
+      type: object
+      required: [approved]
+      properties:
+        approved:
+          type: boolean
+          description: true to approve and continue to export, false to reject
+        comment:
+          type: [string, 'null']
+          description: Optional comment from the user (e.g. rejection reason)
+
+    ApproveDiagramResponse:
+      type: object
+      required: [projectId, status, message]
+      properties:
+        projectId: { type: string }
+        status:
+          type: string
+          description: New project status after approval/rejection
+        message: { type: string }
 
     CommonFeatureListResponse:
       type: object
