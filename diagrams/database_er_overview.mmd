@@ -1,0 +1,12 @@
+erDiagram
+    Project ||--o{ ProjectInput : has
+    Project ||--o{ WorkflowRun : has
+    WorkflowRun ||--o{ WorkflowStep : has
+    WorkflowStep ||--o{ WorkflowLog : has
+    Project ||--o{ Artifact : has
+    Project ||--|| ProjectOutput : has
+    Project ||--o{ ProjectCommonFeature : has
+    CommonFeature ||--o{ ProjectCommonFeature : linked
+    Project ||--o{ SpecificationNode : has
+    Project ||--o{ SpecificationEdge : has
+    Project ||--o{ SpecificationConflict : has

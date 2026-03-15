@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AuditFindings",
+  "type": "object",
+  "required": [
+    "findings"
+  ],
+  "properties": {
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "severity",
+          "problem",
+          "suggestion"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^F-\\d{3}$"
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "critical",
+              "major",
+              "minor"
+            ]
+          },
+          "problem": {
+            "type": "string"
+          },
+          "suggestion": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

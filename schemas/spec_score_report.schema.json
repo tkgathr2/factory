@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Spec Score Report",
+  "type": "object",
+  "required": [
+    "totalScore",
+    "categories",
+    "weakCategories"
+  ],
+  "properties": {
+    "totalScore": {
+      "type": "integer"
+    },
+    "categories": {
+      "type": "object",
+      "required": [
+        "completeness",
+        "clarity",
+        "implementability",
+        "bug_risk",
+        "consistency",
+        "traceability",
+        "testability",
+        "extensibility",
+        "operational_safety",
+        "ai_output_quality"
+      ],
+      "properties": {
+        "completeness": {
+          "type": "integer"
+        },
+        "clarity": {
+          "type": "integer"
+        },
+        "implementability": {
+          "type": "integer"
+        },
+        "bug_risk": {
+          "type": "integer"
+        },
+        "consistency": {
+          "type": "integer"
+        },
+        "traceability": {
+          "type": "integer"
+        },
+        "testability": {
+          "type": "integer"
+        },
+        "extensibility": {
+          "type": "integer"
+        },
+        "operational_safety": {
+          "type": "integer"
+        },
+        "ai_output_quality": {
+          "type": "integer"
+        }
+      }
+    },
+    "weakCategories": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

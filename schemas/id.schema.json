@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Spec ID",
+  "type": "object",
+  "required": [
+    "nodeCode",
+    "nodeType",
+    "title"
+  ],
+  "properties": {
+    "nodeCode": {
+      "type": "string",
+      "pattern": "^(REQ|UI|API|DB|TEST)-\\d{3}$"
+    },
+    "nodeType": {
+      "type": "string",
+      "enum": [
+        "REQ",
+        "UI",
+        "API",
+        "DB",
+        "TEST"
+      ]
+    },
+    "title": {
+      "type": "string"
+    }
+  }
+}

@@ -1,0 +1,66 @@
+version: 1
+rules:
+  - code: common_feature_missing
+    severity: major
+    check:
+      type: section_pattern_min_count
+      sectionIndex: 6
+      patternSource: common_features_enabled
+      minCount: 1
+
+  - code: uncertain_items_missing
+    severity: critical
+    check:
+      type: section_nonempty
+      sectionIndex: 16
+
+  - code: forbidden_assumptions_missing
+    severity: critical
+    check:
+      type: section_nonempty
+      sectionIndex: 18
+
+  - code: acceptance_missing
+    severity: critical
+    check:
+      type: section_nonempty
+      sectionIndex: 20
+
+  - code: api_missing_definition
+    severity: major
+    check:
+      type: section_id_min_count
+      sectionIndex: 8
+      idPrefix: API
+      minCount: 1
+
+  - code: db_missing_definition
+    severity: major
+    check:
+      type: section_id_min_count
+      sectionIndex: 9
+      idPrefix: DB
+      minCount: 1
+
+  - code: test_missing
+    severity: major
+    check:
+      type: section_id_min_count
+      sectionIndex: 19
+      idPrefix: TEST
+      minCount: 1
+
+  - code: error_handling_missing
+    severity: major
+    check:
+      type: section_pattern_min_count
+      sectionIndexes: [7, 8, 12, 14]
+      pattern: "error|retry|fallback"
+      minMatchingSections: 3
+
+  - code: scope_conflict
+    severity: major
+    check:
+      type: overlapping_feature_tokens
+      sectionA: 21
+      sectionB: 22

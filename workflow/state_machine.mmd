@@ -1,0 +1,9 @@
+stateDiagram-v2
+    [*] --> draft
+    draft --> queued: start requested
+    queued --> running: worker picked up
+    running --> blocked: manual stop accepted
+    running --> failed: critical step failure
+    running --> completed: all steps success
+    blocked --> running: resume from checkpoint
+    completed --> ready_for_devin: gate pass

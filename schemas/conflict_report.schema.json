@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ConflictReport",
+  "type": "object",
+  "required": [
+    "projectId",
+    "workflowRunId",
+    "loopIteration",
+    "summary",
+    "conflicts"
+  ],
+  "properties": {
+    "projectId": {
+      "type": "string"
+    },
+    "workflowRunId": {
+      "type": "string"
+    },
+    "loopIteration": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "summary": {
+      "type": "object",
+      "required": [
+        "critical",
+        "major",
+        "minor",
+        "total"
+      ],
+      "properties": {
+        "critical": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "major": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "minor": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "total": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "conflicts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "conflictCode",
+          "severity",
+          "description"
+        ],
+        "properties": {
+          "conflictCode": {
+            "type": "string"
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "critical",
+              "major",
+              "minor"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "fromNodeId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "toNodeId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "ruleCode": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

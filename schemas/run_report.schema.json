@@ -1,0 +1,248 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RunReportResponse",
+  "type": "object",
+  "required": [
+    "project",
+    "phase",
+    "availableFields",
+    "conflictsSummary",
+    "artifactsSummary",
+    "readyForDevin",
+    "heartbeatAgeSec",
+    "totalRuntimeSec"
+  ],
+  "properties": {
+    "project": {
+      "type": "object",
+      "required": [
+        "id",
+        "title",
+        "status",
+        "progressPercent"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "progressPercent": {
+          "type": "integer"
+        },
+        "latestStepStatus": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "stepOrder": {
+              "type": "integer"
+            },
+            "stepKey": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string"
+            },
+            "startedAt": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "date-time"
+            },
+            "finishedAt": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "date-time"
+            }
+          },
+          "required": [
+            "stepOrder",
+            "stepKey",
+            "status",
+            "startedAt",
+            "finishedAt"
+          ]
+        },
+        "stopReason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "loopStopReason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "loopCount": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      }
+    },
+    "phase": {
+      "type": "string",
+      "enum": [
+        "pre_score",
+        "scoring_available",
+        "completed",
+        "blocked",
+        "failed"
+      ],
+      "description": "Coarse lifecycle label only. packages-shared/statuses.md RunReportPhase is the Source of Truth for the allowed values; OpenAPI and JSON Schema must reuse those exact values. Prefer availableFields for rendering logic."
+    },
+    "availableFields": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Authoritative field-availability list for UI rendering. Prefer this over phase when deciding whether scores or recommendations are displayable."
+    },
+    "scores": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "required": [
+        "total",
+        "categories"
+      ],
+      "properties": {
+        "total": {
+          "type": "integer"
+        },
+        "categories": {
+          "type": "object",
+          "required": [
+            "completeness",
+            "clarity",
+            "implementability",
+            "bug_risk",
+            "consistency",
+            "traceability",
+            "testability",
+            "extensibility",
+            "operational_safety",
+            "ai_output_quality"
+          ],
+          "properties": {
+            "completeness": {
+              "type": "integer"
+            },
+            "clarity": {
+              "type": "integer"
+            },
+            "implementability": {
+              "type": "integer"
+            },
+            "bug_risk": {
+              "type": "integer"
+            },
+            "consistency": {
+              "type": "integer"
+            },
+            "traceability": {
+              "type": "integer"
+            },
+            "testability": {
+              "type": "integer"
+            },
+            "extensibility": {
+              "type": "integer"
+            },
+            "operational_safety": {
+              "type": "integer"
+            },
+            "ai_output_quality": {
+              "type": "integer"
+            }
+          }
+        }
+      }
+    },
+    "conflictsSummary": {
+      "type": "object",
+      "required": [
+        "critical",
+        "major",
+        "minor"
+      ],
+      "properties": {
+        "critical": {
+          "type": "integer"
+        },
+        "major": {
+          "type": "integer"
+        },
+        "minor": {
+          "type": "integer"
+        }
+      }
+    },
+    "artifactsSummary": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "artifactType",
+          "versionNo",
+          "storagePath",
+          "createdAt"
+        ],
+        "properties": {
+          "artifactType": {
+            "type": "string"
+          },
+          "versionNo": {
+            "type": "integer"
+          },
+          "storagePath": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "readyForDevin": {
+      "type": "boolean"
+    },
+    "heartbeatAgeSec": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "totalRuntimeSec": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "improvementRecommendations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "scoreDelta": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    }
+  }
+}

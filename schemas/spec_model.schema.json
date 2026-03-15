@@ -1,0 +1,575 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Specification Engine Output Model",
+  "type": "object",
+  "required": [
+    "requirements",
+    "projectSpec"
+  ],
+  "properties": {
+    "requirements": {
+      "type": "object",
+      "required": [
+        "purpose",
+        "problemStatement",
+        "useCases",
+        "functionalRequirements",
+        "uncertainItems"
+      ],
+      "properties": {
+        "purpose": {
+          "type": "string"
+        },
+        "problemStatement": {
+          "type": "string"
+        },
+        "useCases": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "functionalRequirements": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "uncertainItems": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "projectSpec": {
+      "type": "object",
+      "required": [
+        "sections"
+      ],
+      "properties": {
+        "sections": {
+          "type": "array",
+          "minItems": 27,
+          "maxItems": 27,
+          "prefixItems": [
+            {
+              "type": "object",
+              "required": [
+                "index",
+                "title",
+                "content"
+              ],
+              "properties": {
+                "index": {
+                  "const": 1
+                },
+                "title": {
+                  "const": "Purpose"
+                },
+                "content": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "required": [
+                "index",
+                "title",
+                "content"
+              ],
+              "properties": {
+                "index": {
+                  "const": 2
+                },
+                "title": {
+                  "const": "Problem Statement"
+                },
+                "content": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "required": [
+                "index",
+                "title",
+                "content"
+              ],
+              "properties": {
+                "index": {
+                  "const": 3
+                },
+                "title": {
+                  "const": "Use Cases"
+                },
+                "content": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "required": [
+                "index",
+                "title",
+                "content"
+              ],
+              "properties": {
+                "index": {
+                  "const": 4
+                },
+                "title": {
+                  "const": "Functional Requirements"
+                },
+                "content": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "required": [
+                "index",
+                "title",
+                "content"
+              ],
+              "properties": {
+                "index": {
+                  "const": 5
+                },
+                "title": {
+                  "const": "Non-Functional Requirements"
+                },
+                "content": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "required": [
+                "index",
+                "title",
+                "content"
+              ],
+              "properties": {
+                "index": {
+                  "const": 6
+                },
+                "title": {
+                  "const": "Common Platform Features"
+                },
+                "content": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "required": [
+                "index",
+                "title",
+                "content"
+              ],
+              "properties": {
+                "index": {
+                  "const": 7
+                },
+                "title": {
+                  "const": "UI Specification"
+                },
+                "content": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "required": [
+                "index",
+                "title",
+                "content"
+              ],
+              "properties": {
+                "index": {
+                  "const": 8
+                },
+                "title": {
+                  "const": "API Specification"
+                },
+                "content": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "required": [
+                "index",
+                "title",
+                "content"
+              ],
+              "properties": {
+                "index": {
+                  "const": 9
+                },
+                "title": {
+                  "const": "Database Schema"
+                },
+                "content": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "required": [
+                "index",
+                "title",
+                "content"
+              ],
+              "properties": {
+                "index": {
+                  "const": 10
+                },
+                "title": {
+                  "const": "Permission Model"
+                },
+                "content": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "required": [
+                "index",
+                "title",
+                "content"
+              ],
+              "properties": {
+                "index": {
+                  "const": 11
+                },
+                "title": {
+                  "const": "Validation Rules"
+                },
+                "content": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "required": [
+                "index",
+                "title",
+                "content"
+              ],
+              "properties": {
+                "index": {
+                  "const": 12
+                },
+                "title": {
+                  "const": "Processing Logic"
+                },
+                "content": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "required": [
+                "index",
+                "title",
+                "content"
+              ],
+              "properties": {
+                "index": {
+                  "const": 13
+                },
+                "title": {
+                  "const": "Decision Tables"
+                },
+                "content": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "required": [
+                "index",
+                "title",
+                "content"
+              ],
+              "properties": {
+                "index": {
+                  "const": 14
+                },
+                "title": {
+                  "const": "Error Handling"
+                },
+                "content": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "required": [
+                "index",
+                "title",
+                "content"
+              ],
+              "properties": {
+                "index": {
+                  "const": 15
+                },
+                "title": {
+                  "const": "External Services"
+                },
+                "content": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "required": [
+                "index",
+                "title",
+                "content"
+              ],
+              "properties": {
+                "index": {
+                  "const": 16
+                },
+                "title": {
+                  "const": "Uncertain Items"
+                },
+                "content": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "required": [
+                "index",
+                "title",
+                "content"
+              ],
+              "properties": {
+                "index": {
+                  "const": 17
+                },
+                "title": {
+                  "const": "Fixed Assumptions"
+                },
+                "content": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "required": [
+                "index",
+                "title",
+                "content"
+              ],
+              "properties": {
+                "index": {
+                  "const": 18
+                },
+                "title": {
+                  "const": "Devin Forbidden Assumptions"
+                },
+                "content": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "required": [
+                "index",
+                "title",
+                "content"
+              ],
+              "properties": {
+                "index": {
+                  "const": 19
+                },
+                "title": {
+                  "const": "Test Scenarios"
+                },
+                "content": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "required": [
+                "index",
+                "title",
+                "content"
+              ],
+              "properties": {
+                "index": {
+                  "const": 20
+                },
+                "title": {
+                  "const": "Acceptance Criteria"
+                },
+                "content": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "required": [
+                "index",
+                "title",
+                "content"
+              ],
+              "properties": {
+                "index": {
+                  "const": 21
+                },
+                "title": {
+                  "const": "Implementation Scope"
+                },
+                "content": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "required": [
+                "index",
+                "title",
+                "content"
+              ],
+              "properties": {
+                "index": {
+                  "const": 22
+                },
+                "title": {
+                  "const": "Out-of-Scope"
+                },
+                "content": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "required": [
+                "index",
+                "title",
+                "content"
+              ],
+              "properties": {
+                "index": {
+                  "const": 23
+                },
+                "title": {
+                  "const": "Architecture Diagram"
+                },
+                "content": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "required": [
+                "index",
+                "title",
+                "content"
+              ],
+              "properties": {
+                "index": {
+                  "const": 24
+                },
+                "title": {
+                  "const": "Implementation Guide"
+                },
+                "content": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "required": [
+                "index",
+                "title",
+                "content"
+              ],
+              "properties": {
+                "index": {
+                  "const": 25
+                },
+                "title": {
+                  "const": "Conflict Results"
+                },
+                "content": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "required": [
+                "index",
+                "title",
+                "content"
+              ],
+              "properties": {
+                "index": {
+                  "const": 26
+                },
+                "title": {
+                  "const": "Spec Score Result"
+                },
+                "content": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "required": [
+                "index",
+                "title",
+                "content"
+              ],
+              "properties": {
+                "index": {
+                  "const": 27
+                },
+                "title": {
+                  "const": "Spec Test Result"
+                },
+                "content": {
+                  "type": "string"
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}

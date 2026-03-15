@@ -1,0 +1,732 @@
+openapi: 3.1.0
+info:
+  title: Specification Engine API
+  version: 1.0.0
+  description: |
+    projectCode is server-generated in format PRJ-YYYYMMDD-XXXX.
+    Run-report is phase-aware: scores may be null before Step 15.
+servers:
+  - url: https://example.internal
+paths:
+  /api/projects:
+    post:
+      summary: Create project
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProjectRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateProjectResponse'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    get:
+      summary: List projects
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListProjectsResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/projects/{id}:
+    get:
+      summary: Get project detail
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectDetailResponse'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/projects/{id}/run-report:
+    get:
+      summary: Get run report for monitor page
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+      responses:
+        '200':
+          description: Run report
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RunReportResponse'
+        '404':
+          description: Project not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/projects/{id}/artifacts:
+    get:
+      summary: Get latest artifacts for project
+      description: Returns the latest artifact for each artifactType only. This endpoint does not return full artifact history.
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+      responses:
+        '200':
+          description: Artifact list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetArtifactsResponse'
+        '404':
+          description: Project not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/projects/{id}/logs:
+    get:
+      summary: Get logs
+      description: Returns workflow logs ordered by createdAt descending. `cursor` is exclusive and points to the last seen log item from the previous page.
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+        - in: query
+          name: limit
+          required: false
+          schema:
+            type: integer
+            default: 50
+        - in: query
+          name: cursor
+          required: false
+          schema:
+            type:
+              - string
+              - 'null'
+      responses:
+        '200':
+          description: Logs
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetLogsResponse'
+        '404':
+          description: Project not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/projects/{id}/start:
+    post:
+      summary: Start workflow
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+      responses:
+        '200':
+          description: Workflow started
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StartWorkflowResponse'
+        '404':
+          description: Project not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Already queued or running
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/projects/{id}/stop:
+    post:
+      summary: Emergency stop
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+      responses:
+        '200':
+          description: Stop requested
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StopResponse'
+        '404':
+          description: Project not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Stop not allowed in current state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/projects/{id}/resume:
+    post:
+      summary: Resume blocked project
+      description: Only allowed when project.status is blocked
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+      responses:
+        '200':
+          description: Resume accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResumeResponse'
+        '404':
+          description: Project not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Resume not allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/projects/{id}/loop-status:
+    get:
+      summary: Get loop status
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+      responses:
+        '200':
+          description: Loop status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoopStatusResponse'
+        '404':
+          description: Project not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/common-features:
+    get:
+      summary: List common features
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommonFeatureListResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Create common feature
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCommonFeatureRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommonFeatureResponse'
+        '409':
+          description: featureKey already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/common-features/{id}:
+    patch:
+      summary: Update common feature
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCommonFeatureRequest'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommonFeatureResponse'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  parameters:
+    ProjectId:
+      in: path
+      name: id
+      required: true
+      schema:
+        type: string
+
+  schemas:
+    ErrorResponse:
+      type: object
+      required: [error, detail]
+      properties:
+        error:
+          type: string
+        detail:
+          type: string
+
+    CreateProjectRequest:
+      type: object
+      required: [title, rawRequirements]
+      properties:
+        title:
+          type: string
+        rawRequirements:
+          type: string
+        goal:
+          type: [string, 'null']
+          default: ""
+        problem:
+          type: [string, 'null']
+          default: ""
+        targetUsers:
+          type: [string, 'null']
+          default: ""
+        requiredFeatures:
+          type: [array, 'null']
+          default: []
+          items:
+            type: string
+        optionalFeatures:
+          type: [array, 'null']
+          default: []
+          items:
+            type: string
+        commonFeatureIds:
+          type: [array, 'null']
+          default: []
+          items:
+            type: string
+
+    CreateProjectResponse:
+      type: object
+      required: [id, projectCode, status, createdAt]
+      properties:
+        id:
+          type: string
+        projectCode:
+          type: string
+          pattern: '^PRJ-\d{8}-[A-Z0-9]{4}$'
+        status:
+          type: string
+          enum: [draft]
+        createdAt:
+          type: string
+          format: date-time
+
+    ProjectListItem:
+      type: object
+      required: [id, projectCode, title, status, progressPercent, loopCount, lastHeartbeatAt]
+      properties:
+        id:
+          type: string
+        projectCode:
+          type: string
+        title:
+          type: string
+        status:
+          type: string
+          enum: [draft, queued, running, blocked, completed, ready_for_devin, failed]
+        progressPercent:
+          type: integer
+        loopCount:
+          type: integer
+        lastHeartbeatAt:
+          type: [string, 'null']
+          format: date-time
+
+    ListProjectsResponse:
+      type: object
+      required: [projects]
+      properties:
+        projects:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProjectListItem'
+
+    ProjectDetailResponse:
+      type: object
+      required: [project]
+      properties:
+        project:
+          type: object
+          required: [id, projectCode, title, status, progressPercent]
+          properties:
+            id:
+              type: string
+            projectCode:
+              type: string
+            title:
+              type: string
+            status:
+              type: string
+              enum: [draft, queued, running, blocked, completed, ready_for_devin, failed]
+            progressPercent:
+              type: integer
+            currentStepKey:
+              type: [string, 'null']
+            loopStatus:
+              type: [string, 'null']
+            checkpointStepOrder:
+              type: [integer, 'null']
+            checkpointLoopIteration:
+              type: [integer, 'null']
+
+    RunReportLatestStepStatus:
+      type: [object, 'null']
+      properties:
+        stepOrder:
+          type: integer
+        stepKey:
+          type: string
+        status:
+          type: string
+        startedAt:
+          type: [string, 'null']
+          format: date-time
+        finishedAt:
+          type: [string, 'null']
+          format: date-time
+
+    RunReportProject:
+      type: object
+      required: [id, title, status, progressPercent]
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        status:
+          type: string
+          enum: [draft, queued, running, blocked, completed, ready_for_devin, failed]
+        progressPercent:
+          type: integer
+        loopCount:
+          type: [integer, 'null']
+        latestStepStatus:
+          $ref: '#/components/schemas/RunReportLatestStepStatus'
+        stopReason:
+          type: [string, 'null']
+        loopStopReason:
+          type: [string, 'null']
+
+    ScoreCategories:
+      type: object
+      required: [completeness, clarity, implementability, bug_risk, consistency, traceability, testability, extensibility, operational_safety, ai_output_quality]
+      properties:
+        completeness: { type: integer }
+        clarity: { type: integer }
+        implementability: { type: integer }
+        bug_risk: { type: integer }
+        consistency: { type: integer }
+        traceability: { type: integer }
+        testability: { type: integer }
+        extensibility: { type: integer }
+        operational_safety: { type: integer }
+        ai_output_quality: { type: integer }
+
+    RunReportScores:
+      type: object
+      required: [total, categories]
+      properties:
+        total:
+          type: integer
+          minimum: 0
+          maximum: 100
+        categories:
+          $ref: '#/components/schemas/ScoreCategories'
+
+    ConflictsSummary:
+      type: object
+      required: [critical, major, minor]
+      properties:
+        critical: { type: integer }
+        major: { type: integer }
+        minor: { type: integer }
+
+    ArtifactItem:
+      type: object
+      required: [artifactType, versionNo, storagePath, createdAt]
+      properties:
+        artifactType: { type: string }
+        versionNo: { type: integer }
+        storagePath: { type: string }
+        createdAt:
+          type: string
+          format: date-time
+
+    RunReportResponse:
+      type: object
+      required: [project, phase, availableFields, conflictsSummary, artifactsSummary, readyForDevin, heartbeatAgeSec, totalRuntimeSec]
+      properties:
+        project:
+          $ref: '#/components/schemas/RunReportProject'
+        phase:
+          type: string
+          enum: [pre_score, scoring_available, completed, blocked, failed]
+          description: Prefer availableFields for rendering logic. `phase` is a coarse lifecycle label only. packages-shared/statuses.md RunReportPhase is the Source of Truth for the allowed values and OpenAPI must reuse those exact values.
+        availableFields:
+          type: array
+          description: Authoritative field-availability list for UI rendering.
+          items:
+            type: string
+        scores:
+          oneOf:
+            - type: 'null'
+            - $ref: '#/components/schemas/RunReportScores'
+        conflictsSummary:
+          $ref: '#/components/schemas/ConflictsSummary'
+        artifactsSummary:
+          type: array
+          items:
+            $ref: '#/components/schemas/ArtifactItem'
+        readyForDevin:
+          type: boolean
+        heartbeatAgeSec:
+          type: [integer, 'null']
+        totalRuntimeSec:
+          type: [integer, 'null']
+        scoreDelta:
+          type: [integer, 'null']
+        improvementRecommendations:
+          type: array
+          items:
+            type: string
+
+    GetArtifactsResponse:
+      type: object
+      required: [artifacts]
+      properties:
+        artifacts:
+          type: array
+          items:
+            $ref: '#/components/schemas/ArtifactItem'
+
+    WorkflowLogItem:
+      type: object
+      required: [message, source, logLevel, createdAt]
+      properties:
+        message: { type: string }
+        source: { type: string }
+        logLevel: { type: string }
+        createdAt:
+          type: string
+          format: date-time
+
+    GetLogsResponse:
+      type: object
+      required: [logs, total, nextCursor]
+      properties:
+        logs:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkflowLogItem'
+        total: { type: integer }
+        nextCursor:
+          type: [string, 'null']
+          description: Exclusive cursor for the next page. Use the returned value as the next request cursor.
+
+    StartWorkflowResponse:
+      type: object
+      required: [projectId, status]
+      properties:
+        projectId: { type: string }
+        status: { type: string }
+
+    StopResponse:
+      type: object
+      required: [status, loopStatus]
+      properties:
+        status: { type: string }
+        loopStatus: { type: string }
+
+    ResumeResponse:
+      type: object
+      required: [status]
+      properties:
+        status: { type: string }
+
+    LoopStatusResponse:
+      type: object
+      required: [loopCount, hardLimit, loopStatus]
+      properties:
+        loopCount: { type: integer }
+        hardLimit: { type: integer }
+        currentScore: { type: [integer, 'null'] }
+        lastScore: { type: [integer, 'null'] }
+        scoreDelta: { type: [integer, 'null'] }
+        loopStatus: { type: string }
+
+    CreateCommonFeatureRequest:
+      type: object
+      required: [featureKey, name]
+      properties:
+        featureKey: { type: string }
+        name: { type: string }
+        description:
+          type: string
+          default: ""
+        defaultEnabled:
+          type: boolean
+          default: true
+        priority:
+          type: integer
+          default: 100
+
+    UpdateCommonFeatureRequest:
+      type: object
+      properties:
+        description: { type: string }
+        defaultEnabled: { type: boolean }
+        priority: { type: integer }
+
+    CommonFeatureResponse:
+      type: object
+      required: [id, featureKey, name, defaultEnabled, priority]
+      properties:
+        id: { type: string }
+        featureKey: { type: string }
+        name: { type: string }
+        description: { type: string }
+        defaultEnabled: { type: boolean }
+        priority: { type: integer }
+
+    CommonFeatureListResponse:
+      type: object
+      required: [commonFeatures]
+      properties:
+        commonFeatures:
+          type: array
+          items:
+            $ref: '#/components/schemas/CommonFeatureResponse'

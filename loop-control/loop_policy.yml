@@ -1,0 +1,36 @@
+version: 1
+targetScore: 94
+softLimit: 3
+hardLimit: 7
+minimumCategoryScore: 80
+minimumImprovementDelta: 2
+totalTimeoutSec: 7200
+priority:
+  - manual_stop
+  - hard_limit
+  - quality_regression
+  - critical_conflict_increase
+  - total_timeout
+  - target_achieved
+  - soft_limit_reached
+statusMapping:
+  manual_stop: blocked
+  quality_regression: blocked
+  critical_conflict_increase: blocked
+  total_timeout: failed
+  hard_limit: running_continue_to_step18
+  target_achieved: running_continue_to_step18
+  soft_limit_reached: running_continue_to_step18
+softLimitBehavior:
+  - setLoopStatus: soft_limit_reached
+  - showWarning: true
+  - continueAllowed: true
+  - ifNextDeltaLe1ThenStop: true
+resumePolicy:
+  allowedOnlyFromBlocked: true
+  resumeFromNextCheckpoint: true
+  idempotentAtStepBoundary: true
+  resumeTarget: (checkpointStepOrder + 1, checkpointLoopIteration)
+regressionDefinitions:
+  quality_regression: currentScore < lastScore
+  critical_conflict_increase: currentCriticalConflictCount > previousCriticalConflictCount

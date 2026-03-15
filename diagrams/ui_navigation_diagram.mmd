@@ -1,0 +1,6 @@
+flowchart LR
+    A[/projects/new/] -->|POST /api/projects| B[/projects/[id]/]
+    B --> C[GET /api/projects/{id}/run-report]
+    B --> D[GET /api/projects/{id}/artifacts]
+    B --> E[GET /api/projects/{id}/logs]
+    B --> F[ui_navigation_diagram.png]

@@ -1,0 +1,21 @@
+version: 1
+required_before_export:
+  - requirements_final
+  - specification_final
+  - conflict_report
+  - spec_score_report
+  - spec_test_report
+  - ui_navigation_diagram_png
+
+required_for_gate:
+  - requirements_final
+  - specification_final
+  - conflict_report
+  - spec_score_report
+  - spec_test_report
+  - ui_navigation_diagram_png
+  - export_bundle
+
+notes:
+  - devin_gate_result is created by Step 20 and must never be treated as a prerequisite for Step 19 export or Step 20 gate evaluation
+  - required artifact checks are authoritative only through this file

@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SpecTestReport",
+  "type": "object",
+  "required": [
+    "projectId",
+    "workflowRunId",
+    "loopIteration",
+    "summary",
+    "results"
+  ],
+  "properties": {
+    "projectId": {
+      "type": "string"
+    },
+    "workflowRunId": {
+      "type": "string"
+    },
+    "loopIteration": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "summary": {
+      "type": "object",
+      "required": [
+        "passed",
+        "failed",
+        "warning"
+      ],
+      "properties": {
+        "passed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "failed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "warning": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "testCode",
+          "status",
+          "message"
+        ],
+        "properties": {
+          "testCode": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "passed",
+              "failed",
+              "warning"
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "relatedIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}

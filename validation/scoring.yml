@@ -1,0 +1,31 @@
+version: 1
+target_score: 94
+minimum_category_score: 80
+gating:
+  minimum_total_score: 94
+  require_zero_critical: true
+  require_all_categories_at_least_80: true
+  require_acceptance_nonempty: true
+  required_artifacts_source: validation/required_artifacts.yml
+  required_artifacts_gate_applies_at: step20_only
+categories:
+  - name: completeness
+    weight: 0.10
+  - name: clarity
+    weight: 0.10
+  - name: implementability
+    weight: 0.10
+  - name: bug_risk
+    weight: 0.15
+  - name: consistency
+    weight: 0.10
+  - name: traceability
+    weight: 0.10
+  - name: testability
+    weight: 0.10
+  - name: extensibility
+    weight: 0.10
+  - name: operational_safety
+    weight: 0.10
+  - name: ai_output_quality
+    weight: 0.05

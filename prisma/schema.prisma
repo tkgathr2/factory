@@ -1,0 +1,240 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ProjectStatus {
+  draft
+  queued
+  running
+  blocked
+  completed
+  ready_for_devin
+  failed
+}
+
+enum WorkflowRunStatus {
+  queued
+  running
+  completed
+  failed
+}
+
+enum WorkflowStepStatus {
+  pending
+  running
+  success
+  warning
+  failed
+  skipped
+}
+
+model Project {
+  id                  String                  @id @default(cuid())
+  projectCode         String                  @unique
+  title               String
+  status              ProjectStatus
+  currentStepKey      String?
+  progressPercent     Int                     @default(0)
+  lastHeartbeatAt     DateTime?
+  stopReason          String?
+  loopCount           Int                     @default(0)
+  loopStatus          String?
+  loopStopReason      String?
+  manualStopRequested Boolean                 @default(false)
+  lastScore           Int?
+  currentScore        Int?
+  scoreDelta          Int?
+  checkpointStepOrder     Int?
+  checkpointLoopIteration Int?
+  createdAt           DateTime                @default(now())
+  updatedAt           DateTime                @updatedAt
+
+  inputs              ProjectInput[]
+  runs                WorkflowRun[]
+  artifacts           Artifact[]
+  output              ProjectOutput?
+  commonFeatures      ProjectCommonFeature[]
+  nodes               SpecificationNode[]
+  edges               SpecificationEdge[]
+  conflicts           SpecificationConflict[]
+
+  @@index([status, updatedAt])
+}
+
+model ProjectInput {
+  id               String   @id @default(cuid())
+  projectId        String
+  goal             String   @default("")
+  problem          String   @default("")
+  targetUsers      String   @default("")
+  requiredFeatures Json     @default("[]")
+  optionalFeatures Json     @default("[]")
+  rawPrompt        String
+  createdAt        DateTime @default(now())
+
+  project          Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId, createdAt])
+}
+
+model WorkflowRun {
+  id               String            @id @default(cuid())
+  projectId        String
+  status           WorkflowRunStatus
+  startedAt        DateTime?
+  endedAt          DateTime?
+  createdAt        DateTime          @default(now())
+
+  project          Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  steps            WorkflowStep[]
+  logs             WorkflowLog[]
+  conflicts        SpecificationConflict[]
+
+  @@index([projectId, createdAt])
+}
+
+model WorkflowStep {
+  id               String             @id @default(cuid())
+  workflowRunId    String
+  stepOrder        Int
+  loopIteration    Int                @default(0)
+  stepKey          String
+  stepName         String
+  assignedAi       String?
+  status           WorkflowStepStatus
+  summary          String?
+  errorMessage     String?
+  startedAt        DateTime?
+  finishedAt       DateTime?
+
+  workflowRun      WorkflowRun        @relation(fields: [workflowRunId], references: [id], onDelete: Cascade)
+  logs             WorkflowLog[]
+
+  @@unique([workflowRunId, stepOrder, loopIteration])
+  @@index([workflowRunId, status])
+}
+
+model WorkflowLog {
+  id               String        @id @default(cuid())
+  projectId        String
+  workflowRunId    String
+  stepId           String?
+  logLevel         String
+  source           String
+  message          String
+  createdAt        DateTime      @default(now())
+
+  project          Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  workflowRun      WorkflowRun   @relation(fields: [workflowRunId], references: [id], onDelete: Cascade)
+  step             WorkflowStep? @relation(fields: [stepId], references: [id], onDelete: SetNull)
+
+  @@index([projectId, createdAt])
+  @@index([workflowRunId, createdAt])
+}
+
+model CommonFeature {
+  id               String               @id @default(cuid())
+  featureKey       String               @unique
+  name             String
+  description      String
+  defaultEnabled   Boolean              @default(true)
+  priority         Int                  @default(100)
+
+  projectLinks     ProjectCommonFeature[]
+}
+
+model ProjectCommonFeature {
+  id               String        @id @default(cuid())
+  projectId        String
+  commonFeatureId  String
+  enabled          Boolean       @default(true)
+  excludeReason    String?
+
+  project          Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  commonFeature    CommonFeature @relation(fields: [commonFeatureId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, commonFeatureId])
+  @@index([projectId])
+}
+
+model Artifact {
+  id               String   @id @default(cuid())
+  projectId        String
+  artifactType     String
+  versionNo        Int      @default(1)
+  title            String
+  storagePath      String
+  content          String?
+  status           String
+  createdAt        DateTime @default(now())
+
+  project          Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, artifactType, versionNo])
+  @@index([projectId, artifactType, versionNo])
+}
+
+model SpecificationNode {
+  id               String   @id @default(cuid())
+  projectId        String
+  nodeCode         String
+  nodeType         String
+  title            String
+  content          String
+
+  project          Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  outgoingEdges    SpecificationEdge[] @relation("EdgeFromNode")
+  incomingEdges    SpecificationEdge[] @relation("EdgeToNode")
+
+  @@unique([projectId, nodeCode])
+  @@index([projectId, nodeType])
+}
+
+model SpecificationEdge {
+  id               String   @id @default(cuid())
+  projectId        String
+  fromNodeId       String
+  toNodeId         String
+  relationType     String
+
+  project          Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  fromNode         SpecificationNode @relation("EdgeFromNode", fields: [fromNodeId], references: [id], onDelete: Cascade)
+  toNode           SpecificationNode @relation("EdgeToNode", fields: [toNodeId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, fromNodeId, toNodeId, relationType])
+  @@index([projectId, fromNodeId, toNodeId])
+}
+
+model SpecificationConflict {
+  id               String   @id @default(cuid())
+  projectId        String
+  workflowRunId    String
+  loopIteration    Int      @default(0)
+  conflictCode     String
+  severity         String
+  description      String
+  createdAt        DateTime @default(now())
+
+  project          Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  workflowRun      WorkflowRun @relation(fields: [workflowRunId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, workflowRunId, loopIteration, conflictCode, description])
+  @@index([projectId, workflowRunId, loopIteration, severity])
+}
+
+model ProjectOutput {
+  id                         String   @id @default(cuid())
+  projectId                  String   @unique
+  readyForDevin              Boolean  @default(false)
+  specScore                  Int?
+  specScoreBreakdown         Json?
+  conflictsSummary           Json?
+  improvementRecommendations Json?
+
+  project                    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
