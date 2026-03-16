@@ -59,8 +59,8 @@ export default function ProjectsPage() {
         <p style={{ color: "#666" }}>案件がありません。新規作成してください。</p>
       ) : (
         <div className="table-wrapper">
-        <table style={{ width: "100%", borderCollapse: "collapse" }}>
-          <thead>
+          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+            <thead>
             <tr style={{ borderBottom: "2px solid #e5e7eb", textAlign: "left" }}>
               <th style={{ padding: "0.75rem 0.5rem" }}>コード</th>
               <th style={{ padding: "0.75rem 0.5rem" }}>タイトル</th>

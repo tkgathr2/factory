@@ -18,7 +18,6 @@ export const metadata = {
     statusBarStyle: "default" as const,
     title: "仕様書エンジン",
   },
-  themeColor: "#0070f3",
 };
 
 export const viewport = {
@@ -26,6 +25,7 @@ export const viewport = {
   initialScale: 1,
   maximumScale: 5,
   viewportFit: "cover" as const,
+  themeColor: "#0070f3",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
