@@ -40,15 +40,8 @@ COPY --from=builder /app/apps/web/node_modules/@prisma ./apps/web/node_modules/@
 COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
 COPY --from=builder /app/apps/web/node_modules/tsx ./apps/web/node_modules/tsx
 
-# Startup script: migrate + seed + start
-COPY <<'SCRIPT' /app/start.sh
-#!/bin/sh
-cd /app/apps/web
-npx prisma migrate deploy
-npx prisma db seed 2>/dev/null || true
-cd /app
-exec node apps/web/server.js
-SCRIPT
+# Startup script
+COPY scripts/start-web.sh /app/start.sh
 RUN chmod +x /app/start.sh
 
 EXPOSE 3000
