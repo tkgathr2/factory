@@ -13,7 +13,7 @@ async function main() {
   for (const feature of features) {
     await prisma.commonFeature.upsert({
       where: { featureKey: feature.featureKey },
-      update: {},
+      update: { name: feature.name, description: feature.description },
       create: feature,
     });
   }
