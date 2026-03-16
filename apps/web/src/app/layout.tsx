@@ -1,6 +1,6 @@
 export const metadata = {
-  title: "Specification Engine",
-  description: "Generate verified specification documents from rough requirements",
+  title: "仕様書エンジン",
+  description: "ラフな要件から検証済み仕様書を自動生成",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

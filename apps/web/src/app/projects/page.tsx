@@ -37,7 +37,7 @@ export default function ProjectsPage() {
   return (
     <main style={{ padding: "2rem", fontFamily: "system-ui, sans-serif", maxWidth: "1000px", margin: "0 auto" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
-        <h1 style={{ fontSize: "1.5rem", margin: 0 }}>Projects</h1>
+        <h1 style={{ fontSize: "1.5rem", margin: 0 }}>案件一覧</h1>
         <Link
           href="/projects/new"
           style={{
@@ -49,23 +49,23 @@ export default function ProjectsPage() {
             fontSize: "0.9rem",
           }}
         >
-          + New Project
+          + 新規作成
         </Link>
       </div>
 
       {loading ? (
-        <p>Loading...</p>
+        <p>読み込み中...</p>
       ) : projects.length === 0 ? (
-        <p style={{ color: "#666" }}>No projects yet. Create one to get started.</p>
+        <p style={{ color: "#666" }}>案件がありません。新規作成してください。</p>
       ) : (
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
             <tr style={{ borderBottom: "2px solid #e5e7eb", textAlign: "left" }}>
-              <th style={{ padding: "0.75rem 0.5rem" }}>Code</th>
-              <th style={{ padding: "0.75rem 0.5rem" }}>Title</th>
-              <th style={{ padding: "0.75rem 0.5rem" }}>Status</th>
-              <th style={{ padding: "0.75rem 0.5rem" }}>Progress</th>
-              <th style={{ padding: "0.75rem 0.5rem" }}>Loop</th>
+              <th style={{ padding: "0.75rem 0.5rem" }}>コード</th>
+              <th style={{ padding: "0.75rem 0.5rem" }}>タイトル</th>
+              <th style={{ padding: "0.75rem 0.5rem" }}>ステータス</th>
+              <th style={{ padding: "0.75rem 0.5rem" }}>進捗</th>
+              <th style={{ padding: "0.75rem 0.5rem" }}>ループ</th>
             </tr>
           </thead>
           <tbody>

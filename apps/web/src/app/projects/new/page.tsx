@@ -85,7 +85,7 @@ export default function NewProjectPage() {
 
   return (
     <main style={{ padding: "2rem", fontFamily: "system-ui, sans-serif", maxWidth: "700px", margin: "0 auto" }}>
-      <h1 style={{ fontSize: "1.5rem", marginBottom: "1.5rem" }}>New Project</h1>
+      <h1 style={{ fontSize: "1.5rem", marginBottom: "1.5rem" }}>新規案件作成</h1>
 
       {error && (
         <div style={{ padding: "0.75rem", background: "#fef2f2", border: "1px solid #fecaca", borderRadius: "6px", marginBottom: "1rem", color: "#dc2626" }}>
@@ -95,60 +95,60 @@ export default function NewProjectPage() {
 
       <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
         <div>
-          <label style={labelStyle}>Title *</label>
+          <label style={labelStyle}>タイトル *</label>
           <input
             style={inputStyle}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="Project title"
+            placeholder="案件タイトル"
             required
           />
         </div>
 
         <div>
-          <label style={labelStyle}>Raw Requirements *</label>
+          <label style={labelStyle}>ラフ要件 *</label>
           <textarea
             style={{ ...inputStyle, minHeight: "150px", resize: "vertical" }}
             value={rawRequirements}
             onChange={(e) => setRawRequirements(e.target.value)}
-            placeholder="Describe what you want to build..."
+            placeholder="作りたいものを自由に記述してください..."
             required
           />
         </div>
 
         <div>
-          <label style={labelStyle}>Goal</label>
+          <label style={labelStyle}>ゴール</label>
           <input
             style={inputStyle}
             value={goal}
             onChange={(e) => setGoal(e.target.value)}
-            placeholder="What is the goal of this project?"
+            placeholder="このプロジェクトの目的は？"
           />
         </div>
 
         <div>
-          <label style={labelStyle}>Problem</label>
+          <label style={labelStyle}>課題</label>
           <input
             style={inputStyle}
             value={problem}
             onChange={(e) => setProblem(e.target.value)}
-            placeholder="What problem does this solve?"
+            placeholder="どんな課題を解決しますか？"
           />
         </div>
 
         <div>
-          <label style={labelStyle}>Target Users</label>
+          <label style={labelStyle}>ターゲットユーザー</label>
           <input
             style={inputStyle}
             value={targetUsers}
             onChange={(e) => setTargetUsers(e.target.value)}
-            placeholder="Who will use this?"
+            placeholder="誰が使いますか？"
           />
         </div>
 
         {commonFeatures.length > 0 && (
           <div>
-            <label style={labelStyle}>Common Features</label>
+            <label style={labelStyle}>共通機能</label>
             <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
               {commonFeatures.map((f) => (
                 <label key={f.id} style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.9rem" }}>
@@ -185,7 +185,7 @@ export default function NewProjectPage() {
             cursor: submitting ? "not-allowed" : "pointer",
           }}
         >
-          {submitting ? "Creating..." : "Create Project"}
+          {submitting ? "作成中..." : "案件を作成"}
         </button>
       </form>
     </main>

@@ -93,14 +93,14 @@ export default function ProjectMonitorPage() {
   }
 
   if (loading) {
-    return <main style={{ padding: "2rem", fontFamily: "system-ui, sans-serif" }}>Loading...</main>;
+    return <main style={{ padding: "2rem", fontFamily: "system-ui, sans-serif" }}>読み込み中...</main>;
   }
 
   if (error && !report) {
     return (
       <main style={{ padding: "2rem", fontFamily: "system-ui, sans-serif" }}>
         <p style={{ color: "#dc2626" }}>Error: {error}</p>
-        <Link href="/projects" style={{ color: "#0070f3" }}>Back to Projects</Link>
+        <Link href="/projects" style={{ color: "#0070f3" }}>案件一覧に戻る</Link>
       </main>
     );
   }
@@ -129,7 +129,7 @@ export default function ProjectMonitorPage() {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
         <div>
           <Link href="/projects" style={{ color: "#0070f3", textDecoration: "none", fontSize: "0.85rem" }}>
-            &larr; Projects
+            &larr; 案件一覧
           </Link>
           <h1 style={{ fontSize: "1.5rem", margin: "0.25rem 0 0" }}>{project.title}</h1>
         </div>
@@ -146,7 +146,7 @@ export default function ProjectMonitorPage() {
           >
             {project.status}
           </span>
-          <span style={{ fontSize: "0.85rem", color: "#666" }}>Phase: {phase}</span>
+          <span style={{ fontSize: "0.85rem", color: "#666" }}>フェーズ: {phase}</span>
         </div>
       </div>
 
@@ -155,37 +155,37 @@ export default function ProjectMonitorPage() {
         {project.status === "draft" && (
           <button onClick={handleStart} disabled={actionPending}
             style={{ padding: "0.5rem 1rem", background: "#22c55e", color: "#fff", border: "none", borderRadius: "6px", cursor: "pointer" }}>
-            Start Workflow
+            ワークフロー開始
           </button>
         )}
         {(project.status === "running" || project.status === "queued") && (
           <button onClick={handleStop} disabled={actionPending}
             style={{ padding: "0.5rem 1rem", background: "#ef4444", color: "#fff", border: "none", borderRadius: "6px", cursor: "pointer" }}>
-            Emergency Stop
+            緊急停止
           </button>
         )}
         {project.status === "blocked" && (
           <button onClick={handleResume} disabled={actionPending}
             style={{ padding: "0.5rem 1rem", background: "#f59e0b", color: "#fff", border: "none", borderRadius: "6px", cursor: "pointer" }}>
-            Resume
+            再開
           </button>
         )}
         {project.status === "awaiting_approval" && (
           <>
             <button onClick={() => handleApprove(true)} disabled={actionPending}
               style={{ padding: "0.5rem 1rem", background: "#22c55e", color: "#fff", border: "none", borderRadius: "6px", cursor: "pointer" }}>
-              Approve Diagram
+              図を承認
             </button>
             <button onClick={() => handleApprove(false)} disabled={actionPending}
               style={{ padding: "0.5rem 1rem", background: "#ef4444", color: "#fff", border: "none", borderRadius: "6px", cursor: "pointer" }}>
-              Reject Diagram
+              図を却下
             </button>
           </>
         )}
         {(project.status === "completed" || project.status === "ready_for_devin") && (
           <a href={`/api/projects/${projectId}/export-zip`}
             style={{ padding: "0.5rem 1rem", background: "#0070f3", color: "#fff", border: "none", borderRadius: "6px", textDecoration: "none", display: "inline-block" }}>
-            Download ZIP
+            ZIPダウンロード
           </a>
         )}
       </div>
@@ -194,10 +194,10 @@ export default function ProjectMonitorPage() {
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
         {/* Progress Panel */}
         <div style={panelStyle}>
-          <h3 style={headingStyle}>Progress</h3>
+          <h3 style={headingStyle}>進捗</h3>
           <div style={{ marginBottom: "0.5rem" }}>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.25rem" }}>
-              <span style={{ fontSize: "0.85rem" }}>Step {report.project.latestStepStatus?.stepOrder ?? "-"}/20</span>
+              <span style={{ fontSize: "0.85rem" }}>ステップ {report.project.latestStepStatus?.stepOrder ?? "-"}/20</span>
               <span style={{ fontSize: "0.85rem", fontWeight: 600 }}>{project.progressPercent}%</span>
             </div>
             <div style={{ height: "10px", background: "#e5e7eb", borderRadius: "5px" }}>
@@ -206,35 +206,35 @@ export default function ProjectMonitorPage() {
           </div>
           {report.project.latestStepStatus && (
             <p style={{ fontSize: "0.85rem", color: "#666", margin: "0.5rem 0 0" }}>
-              Current: {report.project.latestStepStatus.stepKey} ({report.project.latestStepStatus.status})
+              現在: {report.project.latestStepStatus.stepKey} ({report.project.latestStepStatus.status})
             </p>
           )}
           {report.totalRuntimeSec !== null && (
             <p style={{ fontSize: "0.85rem", color: "#666", margin: "0.25rem 0 0" }}>
-              Runtime: {Math.floor(report.totalRuntimeSec / 60)}m {report.totalRuntimeSec % 60}s
+              実行時間: {Math.floor(report.totalRuntimeSec / 60)}分 {report.totalRuntimeSec % 60}秒
             </p>
           )}
         </div>
 
         {/* Loop Panel */}
         <div style={panelStyle}>
-          <h3 style={headingStyle}>Loop Status</h3>
+          <h3 style={headingStyle}>ループ状態</h3>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem", fontSize: "0.85rem" }}>
-            <div>Loop Count: <strong>{project.loopCount ?? 0}</strong></div>
-            <div>Hard Limit: <strong>7</strong></div>
-            {project.loopStopReason && <div style={{ gridColumn: "1 / -1" }}>Stop Reason: <strong>{project.loopStopReason}</strong></div>}
+            <div>ループ回数: <strong>{project.loopCount ?? 0}</strong></div>
+            <div>上限: <strong>7</strong></div>
+            {project.loopStopReason && <div style={{ gridColumn: "1 / -1" }}>停止理由: <strong>{project.loopStopReason}</strong></div>}
           </div>
         </div>
 
         {/* Scores Panel */}
         <div style={panelStyle}>
-          <h3 style={headingStyle}>Scores</h3>
+          <h3 style={headingStyle}>スコア</h3>
           {scores ? (
             <>
               <div style={{ fontSize: "2rem", fontWeight: 700, color: scores.total >= 94 ? "#22c55e" : scores.total >= 80 ? "#f59e0b" : "#ef4444" }}>
                 {scores.total}
               </div>
-              <div style={{ fontSize: "0.75rem", color: "#999", marginBottom: "0.75rem" }}>/ 100 (target: 94)</div>
+              <div style={{ fontSize: "0.75rem", color: "#999", marginBottom: "0.75rem" }}>/ 100 (目標: 94)</div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.25rem", fontSize: "0.8rem" }}>
                 {Object.entries(scores.categories).map(([cat, val]) => (
                   <div key={cat} style={{ display: "flex", justifyContent: "space-between" }}>
@@ -250,34 +250,34 @@ export default function ProjectMonitorPage() {
               )}
             </>
           ) : (
-            <p style={{ color: "#999", fontSize: "0.85rem" }}>Scores available after Step 15</p>
+            <p style={{ color: "#999", fontSize: "0.85rem" }}>スコアはステップ15以降に表示されます</p>
           )}
         </div>
 
         {/* Conflicts Panel */}
         <div style={panelStyle}>
-          <h3 style={headingStyle}>Conflicts</h3>
+          <h3 style={headingStyle}>矛盾検出</h3>
           <div style={{ display: "flex", gap: "1.5rem", fontSize: "0.9rem" }}>
             <div>
               <span style={{ color: "#dc2626", fontWeight: 700, fontSize: "1.5rem" }}>{conflictsSummary.critical}</span>
-              <div style={{ color: "#999", fontSize: "0.75rem" }}>Critical</div>
+              <div style={{ color: "#999", fontSize: "0.75rem" }}>重大</div>
             </div>
             <div>
               <span style={{ color: "#f59e0b", fontWeight: 700, fontSize: "1.5rem" }}>{conflictsSummary.major}</span>
-              <div style={{ color: "#999", fontSize: "0.75rem" }}>Major</div>
+              <div style={{ color: "#999", fontSize: "0.75rem" }}>警告</div>
             </div>
             <div>
               <span style={{ color: "#6b7280", fontWeight: 700, fontSize: "1.5rem" }}>{conflictsSummary.minor}</span>
-              <div style={{ color: "#999", fontSize: "0.75rem" }}>Minor</div>
+              <div style={{ color: "#999", fontSize: "0.75rem" }}>軽微</div>
             </div>
           </div>
         </div>
 
         {/* Artifacts Panel */}
         <div style={{ ...panelStyle, gridColumn: "1 / -1" }}>
-          <h3 style={headingStyle}>Artifacts</h3>
+          <h3 style={headingStyle}>成果物</h3>
           {artifactsSummary.length === 0 ? (
-            <p style={{ color: "#999", fontSize: "0.85rem" }}>No artifacts yet</p>
+            <p style={{ color: "#999", fontSize: "0.85rem" }}>成果物はまだありません</p>
           ) : (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "0.5rem" }}>
               {artifactsSummary.map((a) => (
@@ -292,17 +292,17 @@ export default function ProjectMonitorPage() {
 
         {/* Devin Gate Panel */}
         <div style={{ ...panelStyle, gridColumn: "1 / -1" }}>
-          <h3 style={headingStyle}>Devin Gate</h3>
+          <h3 style={headingStyle}>Devin ゲート</h3>
           <div style={{
             fontSize: "1rem",
             fontWeight: 700,
             color: readyForDevin ? "#22c55e" : "#999",
           }}>
-            {readyForDevin ? "READY FOR DEVIN" : "Not yet ready"}
+            {readyForDevin ? "DEVIN実装可能" : "まだ準備中"}
           </div>
           {report.improvementRecommendations.length > 0 && (
             <div style={{ marginTop: "0.5rem" }}>
-              <div style={{ fontSize: "0.8rem", color: "#666", marginBottom: "0.25rem" }}>Recommendations:</div>
+              <div style={{ fontSize: "0.8rem", color: "#666", marginBottom: "0.25rem" }}>改善提案:</div>
               <ul style={{ margin: 0, paddingLeft: "1.25rem", fontSize: "0.8rem", color: "#666" }}>
                 {report.improvementRecommendations.map((r, i) => (
                   <li key={i}>{r}</li>

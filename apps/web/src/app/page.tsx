@@ -3,9 +3,9 @@ import Link from "next/link";
 export default function Home() {
   return (
     <main style={{ padding: "2rem", fontFamily: "system-ui, sans-serif", maxWidth: "800px", margin: "0 auto" }}>
-      <h1 style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>Specification Engine v35</h1>
+      <h1 style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>仕様書エンジン v35</h1>
       <p style={{ color: "#666", marginBottom: "2rem" }}>
-        Generate verified specification documents from rough requirements.
+        ラフな要件から検証済み仕様書を自動生成します。
       </p>
       <div style={{ display: "flex", gap: "1rem" }}>
         <Link
@@ -20,7 +20,7 @@ export default function Home() {
             fontWeight: 600,
           }}
         >
-          View Projects
+          案件一覧
         </Link>
         <Link
           href="/projects/new"
@@ -35,7 +35,7 @@ export default function Home() {
             fontWeight: 600,
           }}
         >
-          Create Project
+          新規作成
         </Link>
       </div>
     </main>
