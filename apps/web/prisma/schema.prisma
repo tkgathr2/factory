@@ -64,6 +64,7 @@ model Project {
   edges               SpecificationEdge[]
   conflicts           SpecificationConflict[]
   logs                WorkflowLog[]
+  chatMessages        ChatMessage[]
 
   @@index([status, updatedAt])
 }
@@ -227,6 +228,18 @@ model SpecificationConflict {
 
   @@unique([projectId, workflowRunId, loopIteration, conflictCode, description])
   @@index([projectId, workflowRunId, loopIteration, severity])
+}
+
+model ChatMessage {
+  id        String   @id @default(cuid())
+  projectId String
+  role      String   // "user" or "assistant"
+  content   String
+  createdAt DateTime @default(now())
+
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId, createdAt])
 }
 
 model ProjectOutput {

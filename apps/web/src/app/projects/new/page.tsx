@@ -65,7 +65,7 @@ export default function NewProjectPage() {
       }
 
       const data = await res.json();
-      router.push(`/projects/${data.id}`);
+      router.push(`/projects/${data.id}/chat`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unknown error");
     } finally {
