@@ -173,6 +173,7 @@ export class StepHandlers {
           content: node.content,
         },
         update: {
+          nodeType: node.nodeType,
           title: node.title,
           content: node.content,
         },

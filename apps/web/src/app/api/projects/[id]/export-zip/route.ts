@@ -35,14 +35,15 @@ export async function GET(
       );
     }
 
-    if (!existsSync(exportArtifact.storagePath)) {
+    const zipPath = exportArtifact.content ?? exportArtifact.storagePath;
+    if (!zipPath || !existsSync(zipPath)) {
       return NextResponse.json(
         { error: "not_found", detail: "Export file not found on disk" },
         { status: 404 },
       );
     }
 
-    const fileBuffer = readFileSync(exportArtifact.storagePath);
+    const fileBuffer = readFileSync(zipPath);
     const filename = `${project.projectCode}_spec_bundle.zip`;
 
     return new NextResponse(fileBuffer, {
