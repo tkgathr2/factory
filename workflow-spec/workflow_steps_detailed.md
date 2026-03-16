@@ -8,6 +8,7 @@ Updated on each step start.
 - Project.checkpointStepOrder and Project.checkpointLoopIteration are updated only when a step finishes with success.
 - Never update checkpoint values on step start, queued state, or failed/blocked step completion.
 - The checkpoint step set is every successful step from Step 01 through Step 20.
+- Exception: Step 18 (ui_navigation_diagram) defers checkpoint update until diagram approval. See Step 18 post-step behavior for details.
 - For loop re-execution of Steps 11-17, checkpointLoopIteration must be set to the current loopIteration of the successful step.
 - Resume target is always `(checkpointStepOrder + 1, checkpointLoopIteration)` as defined in loop-control/loop_policy.yml.
 - If the last successful checkpoint is Step 20, resume is not allowed because the workflow is already complete.
