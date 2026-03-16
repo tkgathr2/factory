@@ -85,7 +85,7 @@ export default function NewProjectPage() {
 
   return (
     <main style={{ padding: "2rem", fontFamily: "system-ui, sans-serif", maxWidth: "700px", margin: "0 auto" }}>
-      <h1 style={{ fontSize: "1.5rem", marginBottom: "1.5rem" }}>新規案件作成</h1>
+      <h1 style={{ fontSize: "clamp(1.2rem, 4vw, 1.5rem)", marginBottom: "1.5rem" }}>新規案件作成</h1>
 
       {error && (
         <div style={{ padding: "0.75rem", background: "#fef2f2", border: "1px solid #fecaca", borderRadius: "6px", marginBottom: "1rem", color: "#dc2626" }}>

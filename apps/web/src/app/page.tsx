@@ -3,21 +3,24 @@ import Link from "next/link";
 export default function Home() {
   return (
     <main style={{ padding: "2rem", fontFamily: "system-ui, sans-serif", maxWidth: "800px", margin: "0 auto" }}>
-      <h1 style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>仕様書エンジン v35</h1>
-      <p style={{ color: "#666", marginBottom: "2rem" }}>
+      <h1 style={{ fontSize: "clamp(1.5rem, 5vw, 2rem)", marginBottom: "0.5rem" }}>仕様書エンジン v35</h1>
+      <p style={{ color: "#666", marginBottom: "2rem", fontSize: "clamp(0.9rem, 2.5vw, 1rem)" }}>
         ラフな要件から検証済み仕様書を自動生成します。
       </p>
-      <div style={{ display: "flex", gap: "1rem" }}>
+      <div className="button-row" style={{ display: "flex", gap: "1rem" }}>
         <Link
           href="/projects"
           style={{
-            display: "inline-block",
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
             padding: "0.75rem 1.5rem",
             background: "#0070f3",
             color: "#fff",
             borderRadius: "8px",
             textDecoration: "none",
             fontWeight: 600,
+            minHeight: "44px",
           }}
         >
           案件一覧
@@ -25,7 +28,9 @@ export default function Home() {
         <Link
           href="/projects/new"
           style={{
-            display: "inline-block",
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
             padding: "0.75rem 1.5rem",
             background: "#fff",
             color: "#0070f3",
@@ -33,6 +38,7 @@ export default function Home() {
             borderRadius: "8px",
             textDecoration: "none",
             fontWeight: 600,
+            minHeight: "44px",
           }}
         >
           新規作成

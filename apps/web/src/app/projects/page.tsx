@@ -58,6 +58,7 @@ export default function ProjectsPage() {
       ) : projects.length === 0 ? (
         <p style={{ color: "#666" }}>案件がありません。新規作成してください。</p>
       ) : (
+        <div className="table-wrapper">
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
             <tr style={{ borderBottom: "2px solid #e5e7eb", textAlign: "left" }}>
@@ -112,6 +113,7 @@ export default function ProjectsPage() {
             ))}
           </tbody>
         </table>
+        </div>
       )}
     </main>
   );

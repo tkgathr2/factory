@@ -1,0 +1,92 @@
+/* Reset & Base */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: #fafafa;
+  color: #111;
+}
+
+/* Mobile-first responsive utilities */
+@media (max-width: 768px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .dashboard-grid .full-span {
+    grid-column: 1 / -1 !important;
+  }
+
+  .header-row {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 0.5rem !important;
+  }
+
+  .status-row {
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    gap: 0.5rem !important;
+  }
+
+  .table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .table-wrapper table {
+    min-width: 600px;
+  }
+
+  .button-row {
+    flex-wrap: wrap !important;
+  }
+
+  .score-categories {
+    grid-template-columns: 1fr !important;
+  }
+
+  .artifact-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)) !important;
+  }
+
+  main {
+    padding: 1rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .artifact-grid {
+    grid-template-columns: 1fr 1fr !important;
+  }
+}
+
+/* Smooth transitions */
+button, a {
+  transition: opacity 0.15s ease;
+}
+
+button:active, a:active {
+  opacity: 0.8;
+}
+
+/* Prevent horizontal overflow */
+html, body {
+  overflow-x: hidden;
+}
+
+/* Touch-friendly tap targets */
+@media (max-width: 768px) {
+  button, a[role="button"], .tap-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}

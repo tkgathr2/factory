@@ -126,14 +126,14 @@ export default function ProjectMonitorPage() {
   return (
     <main style={{ padding: "2rem", fontFamily: "system-ui, sans-serif", maxWidth: "1200px", margin: "0 auto" }}>
       {/* Header */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
+      <div className="header-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
         <div>
           <Link href="/projects" style={{ color: "#0070f3", textDecoration: "none", fontSize: "0.85rem" }}>
             &larr; 案件一覧
           </Link>
-          <h1 style={{ fontSize: "1.5rem", margin: "0.25rem 0 0" }}>{project.title}</h1>
+          <h1 style={{ fontSize: "clamp(1.2rem, 4vw, 1.5rem)", margin: "0.25rem 0 0" }}>{project.title}</h1>
         </div>
-        <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+        <div className="status-row" style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
           <span
             style={{
               padding: "0.3rem 0.75rem",
@@ -151,7 +151,7 @@ export default function ProjectMonitorPage() {
       </div>
 
       {/* Control Buttons */}
-      <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1.5rem" }}>
+      <div className="button-row" style={{ display: "flex", gap: "0.5rem", marginBottom: "1.5rem" }}>
         {project.status === "draft" && (
           <button onClick={handleStart} disabled={actionPending}
             style={{ padding: "0.5rem 1rem", background: "#22c55e", color: "#fff", border: "none", borderRadius: "6px", cursor: "pointer" }}>
@@ -191,7 +191,7 @@ export default function ProjectMonitorPage() {
       </div>
 
       {/* Dashboard Grid */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+      <div className="dashboard-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
         {/* Progress Panel */}
         <div style={panelStyle}>
           <h3 style={headingStyle}>進捗</h3>
@@ -235,7 +235,7 @@ export default function ProjectMonitorPage() {
                 {scores.total}
               </div>
               <div style={{ fontSize: "0.75rem", color: "#999", marginBottom: "0.75rem" }}>/ 100 (目標: 94)</div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.25rem", fontSize: "0.8rem" }}>
+              <div className="score-categories" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.25rem", fontSize: "0.8rem" }}>
                 {Object.entries(scores.categories).map(([cat, val]) => (
                   <div key={cat} style={{ display: "flex", justifyContent: "space-between" }}>
                     <span>{cat}</span>
@@ -274,12 +274,12 @@ export default function ProjectMonitorPage() {
         </div>
 
         {/* Artifacts Panel */}
-        <div style={{ ...panelStyle, gridColumn: "1 / -1" }}>
+        <div className="full-span" style={{ ...panelStyle, gridColumn: "1 / -1" }}>
           <h3 style={headingStyle}>成果物</h3>
           {artifactsSummary.length === 0 ? (
             <p style={{ color: "#999", fontSize: "0.85rem" }}>成果物はまだありません</p>
           ) : (
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "0.5rem" }}>
+            <div className="artifact-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "0.5rem" }}>
               {artifactsSummary.map((a) => (
                 <div key={a.artifactType} style={{ padding: "0.5rem", background: "#f9fafb", borderRadius: "4px", fontSize: "0.8rem" }}>
                   <div style={{ fontWeight: 600 }}>{a.artifactType}</div>
@@ -291,7 +291,7 @@ export default function ProjectMonitorPage() {
         </div>
 
         {/* Devin Gate Panel */}
-        <div style={{ ...panelStyle, gridColumn: "1 / -1" }}>
+        <div className="full-span" style={{ ...panelStyle, gridColumn: "1 / -1" }}>
           <h3 style={headingStyle}>Devin ゲート</h3>
           <div style={{
             fontSize: "1rem",
