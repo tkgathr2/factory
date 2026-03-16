@@ -35,10 +35,6 @@ export default function NewProjectPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    if (!title.trim()) {
-      setError("タイトルは必須です。入力してください。");
-      return;
-    }
     if (!rawRequirements.trim()) {
       setError("ラフ要件は必須です。入力してください。");
       return;
@@ -105,7 +101,7 @@ export default function NewProjectPage() {
 
       <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
         <div>
-          <label style={labelStyle}>タイトル *</label>
+          <label style={labelStyle}>タイトル</label>
           <input
             style={inputStyle}
             value={title}
