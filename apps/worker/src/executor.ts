@@ -101,9 +101,16 @@ export class WorkflowExecutor {
           },
         });
 
-        // Create step record
-        const step = await this.prisma.workflowStep.create({
-          data: {
+        // Create or reuse step record (upsert handles resume after rejection)
+        const step = await this.prisma.workflowStep.upsert({
+          where: {
+            workflowRunId_stepOrder_loopIteration: {
+              workflowRunId: run.id,
+              stepOrder: currentStep,
+              loopIteration,
+            },
+          },
+          create: {
             workflowRunId: run.id,
             stepOrder: currentStep,
             loopIteration,
@@ -111,6 +118,12 @@ export class WorkflowExecutor {
             stepName: stepDef.name,
             status: "running",
             startedAt: new Date(),
+          },
+          update: {
+            status: "running",
+            startedAt: new Date(),
+            finishedAt: null,
+            errorMessage: null,
           },
         });
 
