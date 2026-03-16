@@ -34,6 +34,16 @@ export default function NewProjectPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+
+    if (!title.trim()) {
+      setError("タイトルは必須です。入力してください。");
+      return;
+    }
+    if (!rawRequirements.trim()) {
+      setError("ラフ要件は必須です。入力してください。");
+      return;
+    }
+
     setSubmitting(true);
     setError("");
 
@@ -101,7 +111,6 @@ export default function NewProjectPage() {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="案件タイトル"
-            required
           />
         </div>
 
@@ -112,7 +121,6 @@ export default function NewProjectPage() {
             value={rawRequirements}
             onChange={(e) => setRawRequirements(e.target.value)}
             placeholder="作りたいものを自由に記述してください..."
-            required
           />
         </div>
 
@@ -173,7 +181,7 @@ export default function NewProjectPage() {
 
         <button
           type="submit"
-          disabled={submitting || !title || !rawRequirements}
+          disabled={submitting}
           style={{
             padding: "0.75rem 1.5rem",
             background: submitting ? "#93c5fd" : "#0070f3",
