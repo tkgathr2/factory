@@ -18,6 +18,27 @@ const STATUS_COLORS: Record<string, string> = {
 
 const POLL_INTERVAL = 5000;
 
+const STATUS_LABELS: Record<string, string> = {
+  draft: "下書き",
+  queued: "処理待ち",
+  running: "実行中",
+  awaiting_approval: "承認待ち",
+  blocked: "停止中",
+  completed: "完了",
+  ready_for_devin: "Devin実装可",
+  failed: "失敗",
+};
+
+const STATUS_MESSAGES: Record<string, string> = {
+  queued: "ワーカーが処理を開始するまでお待ちください...",
+  running: "ワークフローを実行中です...",
+  awaiting_approval: "UI画面遷移図の承認をお願いします",
+  blocked: "処理が停止されました。再開ボタンで続行できます",
+  completed: "すべてのステップが完了しました",
+  ready_for_devin: "Devinで実装可能な状態です",
+  failed: "処理中にエラーが発生しました",
+};
+
 export default function ProjectMonitorPage() {
   const params = useParams();
   const projectId = params.id as string;
@@ -144,11 +165,94 @@ export default function ProjectMonitorPage() {
               background: STATUS_COLORS[project.status] ?? "#999",
             }}
           >
-            {project.status}
+            {STATUS_LABELS[project.status] ?? project.status}
           </span>
           <span style={{ fontSize: "0.85rem", color: "#666" }}>フェーズ: {phase}</span>
         </div>
       </div>
+
+      {/* Status Banner */}
+      {(project.status === "queued" || project.status === "running") && (
+        <div style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "0.75rem",
+          padding: "0.75rem 1rem",
+          background: project.status === "running" ? "#eff6ff" : "#fffbeb",
+          border: `1px solid ${project.status === "running" ? "#bfdbfe" : "#fde68a"}`,
+          borderRadius: "8px",
+          marginBottom: "1rem",
+        }}>
+          <span style={{
+            display: "inline-block",
+            width: "12px",
+            height: "12px",
+            borderRadius: "50%",
+            background: project.status === "running" ? "#3b82f6" : "#f59e0b",
+            animation: "pulse 1.5s ease-in-out infinite",
+          }} />
+          <span style={{ fontSize: "0.9rem", color: project.status === "running" ? "#1d4ed8" : "#92400e", fontWeight: 500 }}>
+            {STATUS_MESSAGES[project.status]}
+          </span>
+          <span style={{ fontSize: "0.8rem", color: "#999", marginLeft: "auto" }}>
+            5秒ごとに自動更新中
+          </span>
+        </div>
+      )}
+
+      {project.status === "awaiting_approval" && (
+        <div style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "0.75rem",
+          padding: "0.75rem 1rem",
+          background: "#f5f3ff",
+          border: "1px solid #c4b5fd",
+          borderRadius: "8px",
+          marginBottom: "1rem",
+        }}>
+          <span style={{ fontSize: "1.2rem" }}>&#9888;</span>
+          <span style={{ fontSize: "0.9rem", color: "#5b21b6", fontWeight: 500 }}>
+            {STATUS_MESSAGES[project.status]}
+          </span>
+        </div>
+      )}
+
+      {(project.status === "completed" || project.status === "ready_for_devin") && (
+        <div style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "0.75rem",
+          padding: "0.75rem 1rem",
+          background: "#f0fdf4",
+          border: "1px solid #86efac",
+          borderRadius: "8px",
+          marginBottom: "1rem",
+        }}>
+          <span style={{ fontSize: "1.2rem", color: "#22c55e" }}>&#10003;</span>
+          <span style={{ fontSize: "0.9rem", color: "#166534", fontWeight: 500 }}>
+            {STATUS_MESSAGES[project.status]}
+          </span>
+        </div>
+      )}
+
+      {project.status === "failed" && (
+        <div style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "0.75rem",
+          padding: "0.75rem 1rem",
+          background: "#fef2f2",
+          border: "1px solid #fecaca",
+          borderRadius: "8px",
+          marginBottom: "1rem",
+        }}>
+          <span style={{ fontSize: "1.2rem", color: "#dc2626" }}>&#10007;</span>
+          <span style={{ fontSize: "0.9rem", color: "#991b1b", fontWeight: 500 }}>
+            {STATUS_MESSAGES[project.status]}
+          </span>
+        </div>
+      )}
 
       {/* Control Buttons */}
       <div className="button-row" style={{ display: "flex", gap: "0.5rem", marginBottom: "1.5rem" }}>
