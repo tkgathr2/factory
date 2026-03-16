@@ -1,6 +1,6 @@
 {
-  "name": "仕様書エンジン v35",
-  "short_name": "仕様書エンジン",
+  "name": "要件定義・仕様書生成システム【工場長】",
+  "short_name": "工場長",
   "description": "ラフな要件から検証済み仕様書を自動生成",
   "start_url": "/",
   "display": "standalone",

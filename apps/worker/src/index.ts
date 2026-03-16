@@ -20,7 +20,7 @@ async function pollForWork(): Promise<void> {
 }
 
 async function main(): Promise<void> {
-  console.log("[Worker] 仕様書エンジン ワーカー開始");
+  console.log("[Worker] 工場長 ワーカー開始");
   console.log(`[Worker] AIモード=${process.env.AI_MODE || "mock"}`);
   console.log(`[Worker] ポーリング間隔: ${POLL_INTERVAL_MS}ms`);
 

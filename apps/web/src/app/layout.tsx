@@ -1,8 +1,8 @@
 import "./globals.css";
 
 export const metadata = {
-  title: "仕様書エンジン",
-  description: "ラフな要件から検証済み仕様書を自動生成",
+    title: "工場長 - 要件定義・仕様書生成システム",
+    description: "ラフな要件から検証済み仕様書を自動生成",
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },
@@ -16,7 +16,7 @@ export const metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "default" as const,
-    title: "仕様書エンジン",
+    title: "工場長",
   },
 };
 
