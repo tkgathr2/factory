@@ -8,6 +8,7 @@ Updated on each step start.
 - Project.checkpointStepOrder and Project.checkpointLoopIteration are updated only when a step finishes with success.
 - Never update checkpoint values on step start, queued state, or failed/blocked step completion.
 - The checkpoint step set is every successful step from Step 01 through Step 20.
+- Exception: Step 18 (ui_navigation_diagram) defers checkpoint update until diagram approval. See Step 18 post-step behavior for details.
 - For loop re-execution of Steps 11-17, checkpointLoopIteration must be set to the current loopIteration of the successful step.
 - Resume target is always `(checkpointStepOrder + 1, checkpointLoopIteration)` as defined in loop-control/loop_policy.yml.
 - If the last successful checkpoint is Step 20, resume is not allowed because the workflow is already complete.
@@ -200,11 +201,32 @@ Step failure condition:
 - mmdc failure
 - if no UI-NNN exists in section 7, create warning status instead of hard failure
 
+Post-step behavior:
+- On Step 18 success, project.status transitions to awaiting_approval
+- IMPORTANT: checkpointStepOrder is NOT updated to 18 at this point; it remains at the prior checkpoint (Step 17 or earlier)
+- This ensures that resume-after-rejection re-executes Step 18 via the standard resume policy (checkpointStepOrder + 1)
+- Workflow execution pauses (worker releases the run)
+- The UI navigation diagram PNG is presented to the user via the monitor UI
+- User calls POST /api/projects/{id}/approve-diagram with { "approved": true } or { "approved": false }
+- If approved: checkpointStepOrder is updated to 18, project.status transitions back to running, workflow resumes from Step 19
+- If rejected: project.status transitions to blocked, stopReason = "diagram_rejected"
+- Rejected projects can be resumed from blocked state; resume re-executes Step 18 (since checkpoint was not advanced)
+
 ## Step 19 export_spec
+Precondition: Step 18 must be approved (project must have transitioned through awaiting_approval → running via approve-diagram)
 Input artifacts: all latest required_before_export artifacts defined in validation/required_artifacts.yml and available after Step 18
 AI call: NO
 Output artifacts: export_bundle
-Step success condition: export bundle saved
+Output format: ZIP file containing all required_before_export artifacts bundled together
+ZIP contents:
+- requirements_final (Markdown)
+- specification_final (Markdown)
+- conflict_report (JSON)
+- spec_score_report (JSON)
+- spec_test_report (JSON)
+- ui_navigation_diagram_png (PNG)
+- ui_navigation_diagram_mmd (Mermaid source)
+Step success condition: ZIP export bundle saved as artifact with storagePath pointing to the generated ZIP file
 Step failure condition: artifact lookup failure
 
 ## Step 20 devin_gate

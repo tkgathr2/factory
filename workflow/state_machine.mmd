@@ -2,8 +2,11 @@ stateDiagram-v2
     [*] --> draft
     draft --> queued: start requested
     queued --> running: worker picked up
+    running --> awaiting_approval: Step 18 diagram complete
     running --> blocked: manual stop accepted
     running --> failed: critical step failure
+    awaiting_approval --> running: diagram approved
+    awaiting_approval --> blocked: diagram rejected
     running --> completed: all steps success
     blocked --> running: resume from checkpoint
     completed --> ready_for_devin: gate pass

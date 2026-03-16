@@ -97,6 +97,7 @@
       "enum": [
         "pre_score",
         "scoring_available",
+        "awaiting_approval",
         "completed",
         "blocked",
         "failed"

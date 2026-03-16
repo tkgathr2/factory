@@ -63,6 +63,7 @@ model Project {
   nodes               SpecificationNode[]
   edges               SpecificationEdge[]
   conflicts           SpecificationConflict[]
+  logs                WorkflowLog[]
 
   @@index([status, updatedAt])
 }

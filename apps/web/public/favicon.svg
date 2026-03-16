@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0070f3"/>
+      <stop offset="100%" style="stop-color:#0050d0"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="96" fill="url(#bg)"/>
+  <!-- Document icon -->
+  <rect x="140" y="80" width="232" height="300" rx="16" fill="#fff" opacity="0.95"/>
+  <!-- Document lines -->
+  <rect x="180" y="130" width="152" height="12" rx="6" fill="#0070f3" opacity="0.3"/>
+  <rect x="180" y="160" width="120" height="12" rx="6" fill="#0070f3" opacity="0.3"/>
+  <rect x="180" y="190" width="152" height="12" rx="6" fill="#0070f3" opacity="0.3"/>
+  <rect x="180" y="220" width="100" height="12" rx="6" fill="#0070f3" opacity="0.3"/>
+  <rect x="180" y="250" width="140" height="12" rx="6" fill="#0070f3" opacity="0.3"/>
+  <rect x="180" y="280" width="90" height="12" rx="6" fill="#0070f3" opacity="0.3"/>
+  <!-- Checkmark circle -->
+  <circle cx="340" cy="380" r="72" fill="#22c55e"/>
+  <polyline points="300,380 328,408 380,352" fill="none" stroke="#fff" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Gear accent -->
+  <circle cx="160" cy="420" r="40" fill="#fff" opacity="0.15"/>
+  <text x="160" y="435" text-anchor="middle" fill="#fff" font-size="40" font-weight="bold" font-family="system-ui">SE</text>
+</svg>

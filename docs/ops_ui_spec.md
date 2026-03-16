@@ -21,6 +21,15 @@ Run-report contract notes:
 - latestStepStatus should include startedAt and finishedAt
 - totalRuntimeSec should be included for all running/completed states
 
+Diagram approval flow:
+- When project.status = awaiting_approval, monitor UI must:
+  1. Display the ui_navigation_diagram_png artifact prominently
+  2. Show "Approve" and "Reject" buttons
+  3. On approve: POST /api/projects/{id}/approve-diagram { "approved": true }
+  4. On reject: POST /api/projects/{id}/approve-diagram { "approved": false, "comment": "..." }
+  5. After approval, workflow resumes and ZIP export begins automatically
+- When export_bundle artifact exists, show "Download ZIP" button linking to GET /api/projects/{id}/export-zip
+
 Warnings:
 - heartbeatAgeSec > 30 => warning
 - heartbeatAgeSec > 180 => critical
@@ -29,6 +38,7 @@ Warnings:
 Phase values:
 - pre_score = before Step 15 score calculation
 - scoring_available = Step 15 score available while workflow still running
+- awaiting_approval = Step 18 diagram complete, waiting for user approval
 - completed = workflow completed through Step 20
-- blocked = workflow stopped by manual stop, quality regression, or critical conflict increase
+- blocked = workflow stopped by manual stop, quality regression, critical conflict increase, or diagram rejection
 - failed = workflow failed by timeout or unrecoverable engine error
