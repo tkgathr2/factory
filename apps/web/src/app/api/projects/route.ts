@@ -8,9 +8,9 @@ export async function POST(request: NextRequest) {
   try {
     const body = (await request.json()) as CreateProjectRequest;
 
-    if (!body.title || !body.rawRequirements) {
+    if (!body.rawRequirements) {
       return NextResponse.json(
-        { error: "validation_error", detail: "タイトルとラフ要件は必須です" },
+        { error: "validation_error", detail: "ラフ要件は必須です" },
         { status: 422 },
       );
     }
@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
     const project = await prisma.project.create({
       data: {
         projectCode,
-        title: body.title,
+        title: body.title || "無題の案件",
         status: "draft",
         inputs: {
           create: {
