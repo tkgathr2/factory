@@ -92,83 +92,83 @@ export class MockAiProvider implements AiProvider {
     }
 
     return {
-      content: "Mock response for: " + prompt.slice(0, 100),
+      content: "モックレスポンス: " + prompt.slice(0, 100),
       model: "mock",
       tokensUsed: 0,
     };
   }
 
   private mockRequirements(): string {
-    return `# Requirements
+    return `# 要件
 
-## REQ-001: User Authentication
-Users must be able to register and login.
+## REQ-001: ユーザー認証
+ユーザーは登録とログインができること。
 
-## REQ-002: Dashboard
-Users must see a dashboard after login.
+## REQ-002: ダッシュボード
+ログイン後にダッシュボードが表示されること。
 
-## Acceptance Criteria
-- Users can register with email
-- Users can login with credentials
-- Dashboard displays key metrics
+## 受入条件
+- メールアドレスで登録できる
+- 認証情報でログインできる
+- ダッシュボードに主要指標が表示される
 `;
   }
 
   private mockSpecification(): string {
-    return `# Specification
+    return `# 仕様書
 
-## 1. Overview
-System provides user authentication and dashboard.
+## 1. 概要
+ユーザー認証とダッシュボードを提供するシステム。
 
-## 2. Functional Requirements
-### REQ-001: User Authentication
-Users register and login via email/password.
+## 2. 機能要件
+### REQ-001: ユーザー認証
+メール/パスワードによる登録とログイン。
 
-### REQ-002: Dashboard
-Main dashboard showing key metrics.
+### REQ-002: ダッシュボード
+主要指標を表示するメインダッシュボード。
 
-## 3. UI Screens
-### UI-001: Login Screen
-Email and password input with submit button.
+## 3. UI画面
+### UI-001: ログイン画面
+メールとパスワードの入力フォームと送信ボタン。
 
-### UI-002: Dashboard Screen
-Displays metrics and navigation menu.
+### UI-002: ダッシュボード画面
+指標とナビゲーションメニューを表示。
 
-## 4. API Endpoints
+## 4. APIエンドポイント
 ### API-001: POST /auth/register
-Create new user account.
+新規ユーザーアカウントの作成。
 
 ### API-002: POST /auth/login
-Authenticate user and return token.
+ユーザー認証とトークン発行。
 
-## 5. Database Schema
-### DB-001: Users Table
+## 5. データベーススキーマ
+### DB-001: ユーザーテーブル
 id, email, password_hash, created_at
 
-## 6. Test Cases
-### TEST-001: Registration Flow - REQ-001
-Verify user can register with valid email.
+## 6. テストケース
+### TEST-001: 登録フロー - REQ-001
+有効なメールアドレスでユーザー登録できることを検証。
 
-### TEST-002: Login Flow - REQ-001
-Verify user can login with correct credentials.
+### TEST-002: ログインフロー - REQ-001
+正しい認証情報でログインできることを検証。
 
-### TEST-003: Dashboard Load - REQ-002
-Verify dashboard loads after authentication.
+### TEST-003: ダッシュボード読込 - REQ-002
+認証後にダッシュボードが読み込まれることを検証。
 
-## 7. UI Navigation
-### UI-001 → UI-002: After successful login
+## 7. UI遷移
+### UI-001 → UI-002: ログイン成功後
 
-## Acceptance Criteria
-- Registration completes successfully
-- Login returns valid token
-- Dashboard renders within 2 seconds
+## 受入条件
+- 登録が正常に完了する
+- ログインで有効なトークンが返される
+- ダッシュボードが2秒以内に描画される
 `;
   }
 
   private mockMermaidDiagram(): string {
     return `flowchart TD
-    UI001[Login Screen] --> UI002[Dashboard]
-    UI001 --> UI001_ERR[Login Error]
+    UI001[ログイン画面] --> UI002[ダッシュボード]
+    UI001 --> UI001_ERR[ログインエラー]
     UI001_ERR --> UI001
 `;
   }
@@ -183,5 +183,5 @@ export function createAiProvider(): AiProvider {
     return new MockAiProvider();
   }
   // Live providers would be implemented here
-  throw new Error(`Unsupported AI_MODE: ${mode}. Use 'mock' for testing.`);
+  throw new Error(`未対応のAI_MODE: ${mode}。テスト用には 'mock' を使用してください。`);
 }

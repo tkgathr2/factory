@@ -23,37 +23,37 @@ export const DEFAULT_RULES: ConflictRule[] = [
     id: "api_missing_definition",
     severity: "critical",
     condition: "spec has API-NNN reference but no definition in API section",
-    message: "API endpoint referenced but not defined",
+    message: "APIエンドポイントが参照されていますが定義されていません",
   },
   {
     id: "scope_conflict",
     severity: "major",
     condition: "overlapping scope definitions detected",
-    message: "Overlapping scope definitions found",
+    message: "重複するスコープ定義が見つかりました",
   },
   {
     id: "acceptance_missing",
     severity: "critical",
     condition: "specification missing acceptance criteria section",
-    message: "Acceptance criteria section is missing or empty",
+    message: "受入条件セクションが欠落または空です",
   },
   {
     id: "db_schema_mismatch",
     severity: "major",
     condition: "DB-NNN reference does not match schema definition",
-    message: "Database schema reference mismatch",
+    message: "データベーススキーマ参照の不一致",
   },
   {
     id: "ui_flow_gap",
     severity: "minor",
     condition: "UI-NNN navigation path has unreachable screen",
-    message: "Unreachable UI screen detected",
+    message: "到達不能なUI画面が検出されました",
   },
   {
     id: "test_coverage_gap",
     severity: "minor",
     condition: "REQ-NNN has no linked TEST-NNN",
-    message: "Requirement has no linked test case",
+    message: "要件に紐付くテストケースがありません",
   },
 ];
 

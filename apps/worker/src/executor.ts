@@ -79,7 +79,7 @@ export class WorkflowExecutor {
           where: { id: projectId },
         });
         if (freshProject?.manualStopRequested) {
-          await this.log(projectId, run.id, "info", "executor", "Manual stop requested");
+          await this.log(projectId, run.id, "info", "executor", "手動停止が要求されました");
           break;
         }
 
@@ -89,7 +89,7 @@ export class WorkflowExecutor {
         const loopIteration = freshProject?.loopCount ?? 0;
 
         await this.log(projectId, run.id, "info", "executor",
-          `Starting Step ${currentStep}: ${stepDef.name} (loop: ${loopIteration})`);
+          `ステップ${currentStep}開始: ${stepDef.name}（ループ: ${loopIteration}）`);
 
         // Update project current step
         await this.prisma.project.update({
@@ -158,7 +158,7 @@ export class WorkflowExecutor {
                 where: { id: projectId },
                 data: { loopCount: { increment: 1 }, loopStatus: "looping" },
               });
-              await this.log(projectId, run.id, "info", "loop-controller", "Loop continuing -> Step 11");
+              await this.log(projectId, run.id, "info", "loop-controller", "ループ継続 -> ステップ11");
               currentStep = LOOP_START_STEP;
               continue;
             } else {
@@ -171,7 +171,7 @@ export class WorkflowExecutor {
                 },
               });
               await this.log(projectId, run.id, "info", "loop-controller",
-                `Loop stopped: ${loopResult.stopReason}`);
+                `ループ停止: ${loopResult.stopReason}`);
 
               if (!loopResult.continueToStep18) {
                 // Halt - don't proceed to Step 18
@@ -194,7 +194,7 @@ export class WorkflowExecutor {
               data: { status: "awaiting_approval" },
             });
             await this.log(projectId, run.id, "info", "executor",
-              "Step 18 complete. Awaiting user approval of UI navigation diagram.");
+              "ステップ18完了。UI画面遷移図のユーザー承認を待機中。");
             // Worker exits; resumes when user approves via API
             return;
           }
@@ -213,7 +213,7 @@ export class WorkflowExecutor {
             data: { status: "failed", finishedAt: new Date(), errorMessage: errorMsg },
           });
           await this.log(projectId, run.id, "error", "executor",
-            `Step ${currentStep} failed: ${errorMsg}`);
+            `ステップ${currentStep}失敗: ${errorMsg}`);
 
           // Mark project as failed
           await this.prisma.project.update({
@@ -229,7 +229,7 @@ export class WorkflowExecutor {
       }
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : String(error);
-      console.error(`[Executor] Fatal error for project ${projectId}:`, errorMsg);
+      console.error(`[Executor] 致命的エラー (案件 ${projectId}):`, errorMsg);
       await this.prisma.project.update({
         where: { id: projectId },
         data: { status: "failed", stopReason: "executor_error" },
@@ -302,7 +302,7 @@ export class WorkflowExecutor {
         await this.handlers.devinGate(projectId, runId, stepId);
         break;
       default:
-        throw new Error(`Unknown step: ${stepKey}`);
+        throw new Error(`不明なステップ: ${stepKey}`);
     }
   }
 
@@ -423,7 +423,7 @@ export class WorkflowExecutor {
     });
 
     await this.log(projectId, runId, "info", "executor",
-      `Workflow completed. readyForDevin: ${readyForDevin}, status: ${finalStatus}`);
+      `ワークフロー完了。readyForDevin: ${readyForDevin}, ステータス: ${finalStatus}`);
   }
 
   private async getLatestArtifactContent(projectId: string, artifactType: string): Promise<string> {

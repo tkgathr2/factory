@@ -14,7 +14,7 @@ export async function GET(
 
     if (!project) {
       return NextResponse.json(
-        { error: "not_found", detail: "Project not found" },
+        { error: "not_found", detail: "案件が見つかりません" },
         { status: 404 },
       );
     }
@@ -50,7 +50,7 @@ export async function GET(
 
     return NextResponse.json(response);
   } catch (error) {
-    console.error("GET /api/projects/[id]/logs error:", error);
+    console.error("GET /api/projects/[id]/logs エラー:", error);
     return NextResponse.json(
       { error: "internal_error", detail: String(error) },
       { status: 500 },

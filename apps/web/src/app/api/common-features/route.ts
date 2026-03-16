@@ -22,7 +22,7 @@ export async function GET() {
 
     return NextResponse.json(response);
   } catch (error) {
-    console.error("GET /api/common-features error:", error);
+    console.error("GET /api/common-features エラー:", error);
     return NextResponse.json(
       { error: "internal_error", detail: String(error) },
       { status: 500 },
@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
 
     if (!body.featureKey || !body.name) {
       return NextResponse.json(
-        { error: "validation_error", detail: "featureKey and name are required" },
+        { error: "validation_error", detail: "featureKeyとnameは必須です" },
         { status: 422 },
       );
     }
@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
 
     if (existing) {
       return NextResponse.json(
-        { error: "conflict", detail: `featureKey '${body.featureKey}' already exists` },
+        { error: "conflict", detail: `featureKey '${body.featureKey}' は既に存在します` },
         { status: 409 },
       );
     }
@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(response, { status: 201 });
   } catch (error) {
-    console.error("POST /api/common-features error:", error);
+    console.error("POST /api/common-features エラー:", error);
     return NextResponse.json(
       { error: "internal_error", detail: String(error) },
       { status: 500 },

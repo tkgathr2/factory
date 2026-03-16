@@ -14,14 +14,14 @@ export async function POST(
 
     if (!project) {
       return NextResponse.json(
-        { error: "not_found", detail: "Project not found" },
+        { error: "not_found", detail: "案件が見つかりません" },
         { status: 404 },
       );
     }
 
     if (project.status !== "awaiting_approval") {
       return NextResponse.json(
-        { error: "conflict", detail: `Cannot approve: project is ${project.status}, expected awaiting_approval` },
+        { error: "conflict", detail: `承認できません: 案件のステータスは ${project.status} です（awaiting_approval が必要）` },
         { status: 409 },
       );
     }
@@ -42,7 +42,7 @@ export async function POST(
       const response: ApproveDiagramResponse = {
         projectId: project.id,
         status: "queued",
-        message: "Diagram approved. Workflow will resume from Step 19 (export_spec).",
+        message: "図を承認しました。ステップ19（仕様書エクスポート）からワークフローを再開します。",
       };
 
       return NextResponse.json(response);
@@ -61,14 +61,14 @@ export async function POST(
         projectId: project.id,
         status: "blocked",
         message: body.comment
-          ? `Diagram rejected: ${body.comment}. Resume to re-generate.`
-          : "Diagram rejected. Resume to re-generate from Step 18.",
+          ? `図を却下しました: ${body.comment}。再開してステップ18を再実行してください。`
+          : "図を却下しました。再開してステップ18から再生成してください。",
       };
 
       return NextResponse.json(response);
     }
   } catch (error) {
-    console.error("POST /api/projects/[id]/approve-diagram error:", error);
+    console.error("POST /api/projects/[id]/approve-diagram エラー:", error);
     return NextResponse.json(
       { error: "internal_error", detail: String(error) },
       { status: 500 },

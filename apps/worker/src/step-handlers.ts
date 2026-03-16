@@ -31,11 +31,11 @@ export class StepHandlers {
     });
 
     const input = project.inputs[0];
-    if (!input) throw new Error("No project input found");
+    if (!input) throw new Error("プロジェクト入力が見つかりません");
 
     // Store normalized intake artifact
     await this.upsertArtifact(projectId, "intake_raw", input.rawPrompt, "intake");
-    await this.log(projectId, runId, "info", "step-01", `Intake completed for: ${project.title}`);
+    await this.log(projectId, runId, "info", "step-01", `要件取込完了: ${project.title}`);
   }
 
   /** Step 02: Common Features Apply */
@@ -47,8 +47,8 @@ export class StepHandlers {
 
     const featureList = features.map((f) => f.commonFeature.name).join(", ");
     const content = features.length > 0
-      ? `Applied common features: ${featureList}`
-      : "No common features selected";
+      ? `共通機能を適用: ${featureList}`
+      : "共通機能が選択されていません";
 
     await this.upsertArtifact(projectId, "common_features_applied", content, "common_features");
     await this.log(projectId, runId, "info", "step-02", content);
@@ -61,11 +61,11 @@ export class StepHandlers {
 
     const response = await this.ai.call({
       prompt: `requirements_generate\nINPUT:\n${intake}\nCOMMON_FEATURES:\n${commonFeatures}`,
-      systemPrompt: "Generate structured requirements from the input.",
+      systemPrompt: "入力から構造化された要件を生成してください。",
     });
 
     await this.upsertArtifact(projectId, "requirements_draft", response.content, "requirements");
-    await this.log(projectId, runId, "info", "step-03", "Requirements generated");
+    await this.log(projectId, runId, "info", "step-03", "要件生成完了");
   }
 
   /** Step 04-05: Requirements Polish */
@@ -78,11 +78,11 @@ export class StepHandlers {
 
     const response = await this.ai.call({
       prompt: `requirements_polish\nINPUT:\n${source}`,
-      systemPrompt: "Polish and clarify the requirements.",
+      systemPrompt: "要件を磨き上げて明確化してください。",
     });
 
     await this.upsertArtifact(projectId, targetType, response.content, "requirements");
-    await this.log(projectId, runId, "info", stepKey, `Requirements polished (${stepKey})`);
+    await this.log(projectId, runId, "info", stepKey, `要件磨き上げ完了 (${stepKey})`);
   }
 
   /** Step 06-07: Requirements Audit */
@@ -93,12 +93,12 @@ export class StepHandlers {
 
     const response = await this.ai.call({
       prompt: `requirements_audit\nINPUT:\n${requirements}`,
-      systemPrompt: "Audit the requirements for completeness and correctness.",
+      systemPrompt: "要件の完全性と正確性を監査してください。",
     });
 
     const auditNum = stepKey === "requirements_audit_1" ? 1 : 2;
     await this.upsertArtifact(projectId, `requirements_audit_${auditNum}`, response.content, "audit");
-    await this.log(projectId, runId, "info", stepKey, `Requirements audit ${auditNum} completed`);
+    await this.log(projectId, runId, "info", stepKey, `要件監査${auditNum}完了`);
   }
 
   /** Step 08: Specification Generate */
@@ -108,11 +108,11 @@ export class StepHandlers {
 
     const response = await this.ai.call({
       prompt: `specification_generate\nREQUIREMENTS:\n${requirements}\nCOMMON_FEATURES:\n${commonFeatures}`,
-      systemPrompt: "Generate a comprehensive specification document with 27 sections.",
+      systemPrompt: "27セクションの包括的な仕様書を生成してください。",
     });
 
     await this.upsertArtifact(projectId, "specification_draft", response.content, "specification");
-    await this.log(projectId, runId, "info", "step-08", "Specification generated");
+    await this.log(projectId, runId, "info", "step-08", "仕様書生成完了");
   }
 
   /** Step 09-10: Specification Polish */
@@ -125,11 +125,11 @@ export class StepHandlers {
 
     const response = await this.ai.call({
       prompt: `specification_polish\nINPUT:\n${source}`,
-      systemPrompt: "Polish and refine the specification.",
+      systemPrompt: "仕様書を磨き上げて精練してください。",
     });
 
     await this.upsertArtifact(projectId, targetType, response.content, "specification");
-    await this.log(projectId, runId, "info", stepKey, `Specification polished (${stepKey})`);
+    await this.log(projectId, runId, "info", stepKey, `仕様書磨き上げ完了 (${stepKey})`);
   }
 
   /** Step 11-12: Specification Audit */
@@ -138,12 +138,12 @@ export class StepHandlers {
 
     const response = await this.ai.call({
       prompt: `specification_audit\nINPUT:\n${spec}`,
-      systemPrompt: "Audit the specification for completeness, consistency, and correctness.",
+      systemPrompt: "仕様書の完全性、整合性、正確性を監査してください。",
     });
 
     const auditNum = stepKey === "specification_audit_1" ? 1 : 2;
     await this.upsertArtifact(projectId, `specification_audit_${auditNum}`, response.content, "audit");
-    await this.log(projectId, runId, "info", stepKey, `Specification audit ${auditNum} completed`);
+    await this.log(projectId, runId, "info", stepKey, `仕様書監査${auditNum}完了`);
   }
 
   /** Step 13: Specification ID Assign */
@@ -214,7 +214,7 @@ export class StepHandlers {
     const withIds = `${spec}\n\n<!-- Nodes: ${nodes.length}, Edges: ${edges.length} -->`;
     await this.upsertArtifact(projectId, "specification_with_ids", withIds, "specification");
     await this.log(projectId, runId, "info", "step-13",
-      `ID assignment: ${nodes.length} nodes, ${edges.length} edges`);
+      `ID付与: ${nodes.length}ノード, ${edges.length}エッジ`);
   }
 
   /** Step 14: Conflict Check */
@@ -257,7 +257,7 @@ export class StepHandlers {
     const reportContent = JSON.stringify({ conflicts, summary }, null, 2);
     await this.upsertArtifact(projectId, "conflict_report", reportContent, "validation");
     await this.log(projectId, runId, "info", "step-14",
-      `Conflict check: critical=${summary.critical}, major=${summary.major}, minor=${summary.minor}`);
+      `矛盾検出: 重大=${summary.critical}, 主要=${summary.major}, 軽微=${summary.minor}`);
   }
 
   /** Step 15: Spec Score */
@@ -310,7 +310,7 @@ export class StepHandlers {
 
     await this.upsertArtifact(projectId, "spec_score_report", reportContent, "scoring");
     await this.log(projectId, runId, "info", "step-15",
-      `Score: ${result.total} (weak: ${result.weakCategories.join(", ") || "none"})`);
+      `スコア: ${result.total} (弱点: ${result.weakCategories.join(", ") || "なし"})`);
   }
 
   /** Step 16: Spec Test */
@@ -329,23 +329,23 @@ export class StepHandlers {
       failed: 1,
       skipped: 0,
       testCases: [
-        { name: "Structure validation", status: "passed" },
-        { name: "Required sections present", status: "passed" },
-        { name: "ID format compliance", status: "passed" },
-        { name: "Cross-reference integrity", status: "passed" },
-        { name: "Acceptance criteria present", status: "passed" },
-        { name: "API completeness", status: "passed" },
-        { name: "DB schema coverage", status: "passed" },
-        { name: "Test case coverage", status: "passed" },
-        { name: "UI flow continuity", status: "passed" },
-        { name: "Security requirements", status: "failed" },
+        { name: "構造検証", status: "passed" },
+        { name: "必須セクション存在確認", status: "passed" },
+        { name: "IDフォーマット準拠", status: "passed" },
+        { name: "相互参照整合性", status: "passed" },
+        { name: "受入条件存在確認", status: "passed" },
+        { name: "API完全性", status: "passed" },
+        { name: "DBスキーマカバレッジ", status: "passed" },
+        { name: "テストケースカバレッジ", status: "passed" },
+        { name: "UIフロー連続性", status: "passed" },
+        { name: "セキュリティ要件", status: "failed" },
       ],
       loopIteration,
     };
 
     await this.upsertArtifact(projectId, "spec_test_report", JSON.stringify(testReport, null, 2), "testing");
     await this.log(projectId, runId, "info", "step-16",
-      `Tests: ${testReport.passed}/${testReport.totalTests} passed`);
+      `テスト: ${testReport.passed}/${testReport.totalTests}件合格`);
   }
 
   /** Step 17: Spec Feedback (improvement) */
@@ -362,12 +362,12 @@ export class StepHandlers {
 
     const response = await this.ai.call({
       prompt: `specification_improve\nSPEC:\n${spec}\nSCORE:\n${scoreReport}\nCONFLICTS:\n${conflictReport}\nTESTS:\n${testReport}`,
-      systemPrompt: "Improve the specification based on weak scores, conflicts, and test failures.",
+      systemPrompt: "弱点スコア、矛盾、テスト失敗に基づいて仕様書を改善してください。",
     });
 
     // Update specification_final with improved version
     await this.upsertArtifact(projectId, "specification_final", response.content, "specification");
-    await this.log(projectId, runId, "info", "step-17", `Specification improved (iteration ${loopIteration})`);
+    await this.log(projectId, runId, "info", "step-17", `仕様書改善完了（イテレーション ${loopIteration}）`);
   }
 
   /** Step 18: UI Navigation Diagram */
@@ -376,7 +376,7 @@ export class StepHandlers {
 
     const response = await this.ai.call({
       prompt: `ui_navigation_diagram\nSPEC:\n${spec}`,
-      systemPrompt: "Generate a Mermaid flowchart for UI navigation.",
+      systemPrompt: "UI画面遷移のMermaidフローチャートを生成してください。",
     });
 
     // Store Mermaid source
@@ -386,7 +386,7 @@ export class StepHandlers {
     // In production, would use mermaid-cli to render to PNG
     await this.upsertArtifact(projectId, "ui_navigation_diagram_png", response.content, "diagram");
 
-    await this.log(projectId, runId, "info", "step-18", "UI navigation diagram generated");
+    await this.log(projectId, runId, "info", "step-18", "UI画面遷移図生成完了");
   }
 
   /** Step 19: Export Spec */
@@ -444,7 +444,7 @@ export class StepHandlers {
 
     await this.upsertArtifact(projectId, "export_bundle", zipPath, "export");
     await this.log(projectId, runId, "info", "step-19",
-      `Export bundle created: ${artifacts.length} files`);
+      `エクスポートバンドル作成: ${artifacts.length}ファイル`);
   }
 
   /** Step 20: Devin Gate */
@@ -475,7 +475,7 @@ export class StepHandlers {
           readyForDevin,
         }, null, 2);
       } catch {
-        gateDetails = JSON.stringify({ error: "Failed to evaluate gate", readyForDevin: false });
+        gateDetails = JSON.stringify({ error: "ゲート評価に失敗", readyForDevin: false });
       }
     }
 
@@ -488,7 +488,7 @@ export class StepHandlers {
     });
 
     await this.log(projectId, runId, "info", "step-20",
-      `Devin gate: readyForDevin=${readyForDevin}`);
+      `Devinゲート: readyForDevin=${readyForDevin}`);
   }
 
   // --- Helper Methods ---

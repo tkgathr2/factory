@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
 
     if (!body.title || !body.rawRequirements) {
       return NextResponse.json(
-        { error: "validation_error", detail: "title and rawRequirements are required" },
+        { error: "validation_error", detail: "タイトルとラフ要件は必須です" },
         { status: 422 },
       );
     }
@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(response, { status: 201 });
   } catch (error) {
-    console.error("POST /api/projects error:", error);
+    console.error("POST /api/projects エラー:", error);
     return NextResponse.json(
       { error: "internal_error", detail: String(error) },
       { status: 500 },
@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-/** GET /api/projects — List projects */
+/** GET /api/projects — 案件一覧取得 */
 export async function GET() {
   try {
     const projects = await prisma.project.findMany({
@@ -83,7 +83,7 @@ export async function GET() {
 
     return NextResponse.json(response);
   } catch (error) {
-    console.error("GET /api/projects error:", error);
+    console.error("GET /api/projects エラー:", error);
     return NextResponse.json(
       { error: "internal_error", detail: String(error) },
       { status: 500 },

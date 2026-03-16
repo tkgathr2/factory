@@ -14,14 +14,14 @@ export async function POST(
 
     if (!project) {
       return NextResponse.json(
-        { error: "not_found", detail: "Project not found" },
+        { error: "not_found", detail: "案件が見つかりません" },
         { status: 404 },
       );
     }
 
     if (project.status !== "blocked") {
       return NextResponse.json(
-        { error: "conflict", detail: `Cannot resume: project is ${project.status}` },
+        { error: "conflict", detail: `再開できません: 案件のステータスは ${project.status} です` },
         { status: 409 },
       );
     }
@@ -42,7 +42,7 @@ export async function POST(
 
     return NextResponse.json(response);
   } catch (error) {
-    console.error("POST /api/projects/[id]/resume error:", error);
+    console.error("POST /api/projects/[id]/resume エラー:", error);
     return NextResponse.json(
       { error: "internal_error", detail: String(error) },
       { status: 500 },

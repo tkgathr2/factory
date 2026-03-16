@@ -14,7 +14,7 @@ export async function PATCH(
 
     if (!feature) {
       return NextResponse.json(
-        { error: "not_found", detail: "Common feature not found" },
+        { error: "not_found", detail: "共通機能が見つかりません" },
         { status: 404 },
       );
     }
@@ -41,7 +41,7 @@ export async function PATCH(
 
     return NextResponse.json(response);
   } catch (error) {
-    console.error("PATCH /api/common-features/[id] error:", error);
+    console.error("PATCH /api/common-features/[id] エラー:", error);
     return NextResponse.json(
       { error: "internal_error", detail: String(error) },
       { status: 500 },

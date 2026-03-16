@@ -14,7 +14,7 @@ export async function GET(
 
     if (!project) {
       return NextResponse.json(
-        { error: "not_found", detail: "Project not found" },
+        { error: "not_found", detail: "案件が見つかりません" },
         { status: 404 },
       );
     }
@@ -30,7 +30,7 @@ export async function GET(
 
     if (!exportArtifact) {
       return NextResponse.json(
-        { error: "conflict", detail: "Export bundle not yet available. Step 19 must complete first." },
+        { error: "conflict", detail: "エクスポートバンドルがまだ準備できていません。ステップ19が完了する必要があります。" },
         { status: 409 },
       );
     }
@@ -38,7 +38,7 @@ export async function GET(
     const zipPath = exportArtifact.content ?? exportArtifact.storagePath;
     if (!zipPath || !existsSync(zipPath)) {
       return NextResponse.json(
-        { error: "not_found", detail: "Export file not found on disk" },
+        { error: "not_found", detail: "エクスポートファイルがディスク上に見つかりません" },
         { status: 404 },
       );
     }
@@ -53,7 +53,7 @@ export async function GET(
       },
     });
   } catch (error) {
-    console.error("GET /api/projects/[id]/export-zip error:", error);
+    console.error("GET /api/projects/[id]/export-zip エラー:", error);
     return NextResponse.json(
       { error: "internal_error", detail: String(error) },
       { status: 500 },
