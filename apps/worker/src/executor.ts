@@ -21,6 +21,12 @@ import type { AiProvider } from "@spec-engine/engine";
 import type { ScoreCategoryMap } from "@spec-engine/shared";
 import { StepHandlers } from "./step-handlers";
 
+/** Steps that can be run in parallel as pairs */
+const PARALLEL_STEP_PAIRS: Record<number, number> = {
+  6: 7,   // requirements_audit_1 + requirements_audit_2
+  11: 12, // specification_audit_1 + specification_audit_2
+};
+
 export class WorkflowExecutor {
   private prisma: PrismaClient;
   private aiProvider: AiProvider;
@@ -52,15 +58,17 @@ export class WorkflowExecutor {
       });
     }
 
-    // Transition to running
-    await this.prisma.project.update({
-      where: { id: projectId },
-      data: { status: "running" },
-    });
-    await this.prisma.workflowRun.update({
-      where: { id: run.id },
-      data: { status: "running", startedAt: new Date() },
-    });
+    // Transition to running (batch both updates)
+    await Promise.all([
+      this.prisma.project.update({
+        where: { id: projectId },
+        data: { status: "running" },
+      }),
+      this.prisma.workflowRun.update({
+        where: { id: run.id },
+        data: { status: "running", startedAt: new Date() },
+      }),
+    ]);
 
     // Determine start step (resume from checkpoint or start from 1)
     let startStep = 1;
@@ -87,6 +95,33 @@ export class WorkflowExecutor {
         if (!stepDef) break;
 
         const loopIteration = freshProject?.loopCount ?? 0;
+
+        // Check if this step can be parallelized with the next
+        const pairedStep = PARALLEL_STEP_PAIRS[currentStep];
+        if (pairedStep) {
+          const nextStepDef = getStepByOrder(pairedStep);
+          if (nextStepDef) {
+            await this.executeParallelSteps(
+              projectId, run.id, currentStep, pairedStep,
+              stepDef, nextStepDef, loopIteration,
+            );
+
+            // Update checkpoint to the paired step
+            await this.prisma.project.update({
+              where: { id: projectId },
+              data: {
+                currentStepKey: nextStepDef.key,
+                progressPercent: calculateProgress(pairedStep),
+                lastHeartbeatAt: new Date(),
+                checkpointStepOrder: pairedStep,
+                checkpointLoopIteration: loopIteration,
+              },
+            });
+
+            currentStep = pairedStep + 1;
+            continue;
+          }
+        }
 
         await this.log(projectId, run.id, "info", "executor",
           `ステップ${currentStep}開始: ${stepDef.name}（ループ: ${loopIteration}）`);
@@ -131,22 +166,25 @@ export class WorkflowExecutor {
           // Execute step
           await this.executeStep(projectId, run.id, step.id, stepDef.key, loopIteration);
 
-          // Mark step success
-          await this.prisma.workflowStep.update({
-            where: { id: step.id },
-            data: { status: "success", finishedAt: new Date() },
-          });
-
-          // Update checkpoint (except Step 18 - checkpoint only updated on approval)
+          // Mark step success + update checkpoint in parallel (except Step 18)
+          const updates: Promise<unknown>[] = [
+            this.prisma.workflowStep.update({
+              where: { id: step.id },
+              data: { status: "success", finishedAt: new Date() },
+            }),
+          ];
           if (currentStep !== 18) {
-            await this.prisma.project.update({
-              where: { id: projectId },
-              data: {
-                checkpointStepOrder: currentStep,
-                checkpointLoopIteration: loopIteration,
-              },
-            });
+            updates.push(
+              this.prisma.project.update({
+                where: { id: projectId },
+                data: {
+                  checkpointStepOrder: currentStep,
+                  checkpointLoopIteration: loopIteration,
+                },
+              }),
+            );
           }
+          await Promise.all(updates);
 
           // Handle Step 17 (loop evaluation)
           if (currentStep === 17) {
@@ -208,37 +246,106 @@ export class WorkflowExecutor {
           currentStep++;
         } catch (stepError) {
           const errorMsg = stepError instanceof Error ? stepError.message : String(stepError);
-          await this.prisma.workflowStep.update({
-            where: { id: step.id },
-            data: { status: "failed", finishedAt: new Date(), errorMessage: errorMsg },
-          });
-          await this.log(projectId, run.id, "error", "executor",
-            `ステップ${currentStep}失敗: ${errorMsg}`);
+          await Promise.all([
+            this.prisma.workflowStep.update({
+              where: { id: step.id },
+              data: { status: "failed", finishedAt: new Date(), errorMessage: errorMsg },
+            }),
+            this.log(projectId, run.id, "error", "executor",
+              `ステップ${currentStep}失敗: ${errorMsg}`),
+          ]);
 
           // Mark project as failed
-          await this.prisma.project.update({
-            where: { id: projectId },
-            data: { status: "failed", stopReason: `step_${currentStep}_failed` },
-          });
-          await this.prisma.workflowRun.update({
-            where: { id: run.id },
-            data: { status: "failed", endedAt: new Date() },
-          });
+          await Promise.all([
+            this.prisma.project.update({
+              where: { id: projectId },
+              data: { status: "failed", stopReason: `step_${currentStep}_failed` },
+            }),
+            this.prisma.workflowRun.update({
+              where: { id: run.id },
+              data: { status: "failed", endedAt: new Date() },
+            }),
+          ]);
           return;
         }
       }
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : String(error);
       console.error(`[Executor] 致命的エラー (案件 ${projectId}):`, errorMsg);
-      await this.prisma.project.update({
-        where: { id: projectId },
-        data: { status: "failed", stopReason: "executor_error" },
-      });
-      await this.prisma.workflowRun.update({
-        where: { id: run.id },
-        data: { status: "failed", endedAt: new Date() },
-      });
+      await Promise.all([
+        this.prisma.project.update({
+          where: { id: projectId },
+          data: { status: "failed", stopReason: "executor_error" },
+        }),
+        this.prisma.workflowRun.update({
+          where: { id: run.id },
+          data: { status: "failed", endedAt: new Date() },
+        }),
+      ]);
     }
+  }
+
+  /** Execute two steps in parallel (e.g., audit_1 + audit_2) */
+  private async executeParallelSteps(
+    projectId: string,
+    runId: string,
+    stepOrder1: number,
+    stepOrder2: number,
+    stepDef1: { key: string; name: string },
+    stepDef2: { key: string; name: string },
+    loopIteration: number,
+  ): Promise<void> {
+    await this.log(projectId, runId, "info", "executor",
+      `ステップ${stepOrder1}+${stepOrder2}並列実行: ${stepDef1.name} & ${stepDef2.name}（ループ: ${loopIteration}）`);
+
+    // Create step records in parallel
+    const [step1, step2] = await Promise.all([
+      this.prisma.workflowStep.upsert({
+        where: {
+          workflowRunId_stepOrder_loopIteration: {
+            workflowRunId: runId, stepOrder: stepOrder1, loopIteration,
+          },
+        },
+        create: {
+          workflowRunId: runId, stepOrder: stepOrder1, loopIteration,
+          stepKey: stepDef1.key, stepName: stepDef1.name,
+          status: "running", startedAt: new Date(),
+        },
+        update: { status: "running", startedAt: new Date(), finishedAt: null, errorMessage: null },
+      }),
+      this.prisma.workflowStep.upsert({
+        where: {
+          workflowRunId_stepOrder_loopIteration: {
+            workflowRunId: runId, stepOrder: stepOrder2, loopIteration,
+          },
+        },
+        create: {
+          workflowRunId: runId, stepOrder: stepOrder2, loopIteration,
+          stepKey: stepDef2.key, stepName: stepDef2.name,
+          status: "running", startedAt: new Date(),
+        },
+        update: { status: "running", startedAt: new Date(), finishedAt: null, errorMessage: null },
+      }),
+    ]);
+
+    // Execute both steps in parallel
+    await Promise.all([
+      this.executeStep(projectId, runId, step1.id, stepDef1.key, loopIteration),
+      this.executeStep(projectId, runId, step2.id, stepDef2.key, loopIteration),
+    ]);
+
+    // Mark both as success in parallel
+    const now = new Date();
+    await Promise.all([
+      this.prisma.workflowStep.update({
+        where: { id: step1.id },
+        data: { status: "success", finishedAt: now },
+      }),
+      this.prisma.workflowStep.update({
+        where: { id: step2.id },
+        data: { status: "success", finishedAt: now },
+      }),
+    ]);
   }
 
   private async executeStep(
@@ -311,34 +418,33 @@ export class WorkflowExecutor {
     runId: string,
     runStartTime: number,
   ) {
-    const project = await this.prisma.project.findUniqueOrThrow({
-      where: { id: projectId },
-    });
+    // Run all queries in parallel
+    const [project, scoreArtifact] = await Promise.all([
+      this.prisma.project.findUniqueOrThrow({ where: { id: projectId } }),
+      this.prisma.artifact.findFirst({
+        where: { projectId, artifactType: "spec_score_report" },
+        orderBy: { versionNo: "desc" },
+      }),
+    ]);
 
-    // Get previous loop conflict count
-    const prevConflicts = await this.prisma.specificationConflict.count({
-      where: {
-        projectId,
-        workflowRunId: runId,
-        severity: "critical",
-        loopIteration: Math.max(0, project.loopCount - 1),
-      },
-    });
-
-    const currentConflicts = await this.prisma.specificationConflict.count({
-      where: {
-        projectId,
-        workflowRunId: runId,
-        severity: "critical",
-        loopIteration: project.loopCount,
-      },
-    });
-
-    // Check all category scores
-    const scoreArtifact = await this.prisma.artifact.findFirst({
-      where: { projectId, artifactType: "spec_score_report" },
-      orderBy: { versionNo: "desc" },
-    });
+    const [prevConflicts, currentConflicts] = await Promise.all([
+      this.prisma.specificationConflict.count({
+        where: {
+          projectId,
+          workflowRunId: runId,
+          severity: "critical",
+          loopIteration: Math.max(0, project.loopCount - 1),
+        },
+      }),
+      this.prisma.specificationConflict.count({
+        where: {
+          projectId,
+          workflowRunId: runId,
+          severity: "critical",
+          loopIteration: project.loopCount,
+        },
+      }),
+    ]);
 
     let allAboveMinimum = false;
     if (scoreArtifact?.content) {
@@ -366,25 +472,26 @@ export class WorkflowExecutor {
   }
 
   private async finalizeWorkflow(projectId: string, runId: string): Promise<void> {
-    const project = await this.prisma.project.findUniqueOrThrow({
-      where: { id: projectId },
-    });
-
-    // Evaluate Devin gate
-    const scoreArtifact = await this.prisma.artifact.findFirst({
-      where: { projectId, artifactType: "spec_score_report" },
-      orderBy: { versionNo: "desc" },
-    });
+    // Run all queries in parallel
+    const [project, scoreArtifact] = await Promise.all([
+      this.prisma.project.findUniqueOrThrow({ where: { id: projectId } }),
+      this.prisma.artifact.findFirst({
+        where: { projectId, artifactType: "spec_score_report" },
+        orderBy: { versionNo: "desc" },
+      }),
+    ]);
 
     let readyForDevin = false;
     if (scoreArtifact?.content) {
       try {
         const parsed = JSON.parse(scoreArtifact.content);
         const scoreResult = calculateScore(parsed.categories as ScoreCategoryMap);
-        const criticalCount = await this.prisma.specificationConflict.count({
-          where: { projectId, severity: "critical" },
-        });
-        const specContent = await this.getLatestArtifactContent(projectId, "specification_final");
+        const [criticalCount, specContent] = await Promise.all([
+          this.prisma.specificationConflict.count({
+            where: { projectId, severity: "critical" },
+          }),
+          this.getLatestArtifactContent(projectId, "specification_final"),
+        ]);
         const hasAcceptance = specContent.includes("Acceptance Criteria") || specContent.includes("受入条件");
 
         readyForDevin = meetsGatingRequirements(scoreResult, criticalCount, hasAcceptance);
@@ -395,32 +502,32 @@ export class WorkflowExecutor {
 
     const finalStatus = readyForDevin ? "ready_for_devin" : "completed";
 
-    // Update project output
-    await this.prisma.projectOutput.upsert({
-      where: { projectId },
-      create: {
-        projectId,
-        readyForDevin,
-        specScore: project.currentScore,
-      },
-      update: {
-        readyForDevin,
-        specScore: project.currentScore,
-      },
-    });
-
-    await this.prisma.project.update({
-      where: { id: projectId },
-      data: {
-        status: finalStatus,
-        progressPercent: 100,
-      },
-    });
-
-    await this.prisma.workflowRun.update({
-      where: { id: runId },
-      data: { status: "completed", endedAt: new Date() },
-    });
+    // Run all final updates in parallel
+    await Promise.all([
+      this.prisma.projectOutput.upsert({
+        where: { projectId },
+        create: {
+          projectId,
+          readyForDevin,
+          specScore: project.currentScore,
+        },
+        update: {
+          readyForDevin,
+          specScore: project.currentScore,
+        },
+      }),
+      this.prisma.project.update({
+        where: { id: projectId },
+        data: {
+          status: finalStatus,
+          progressPercent: 100,
+        },
+      }),
+      this.prisma.workflowRun.update({
+        where: { id: runId },
+        data: { status: "completed", endedAt: new Date() },
+      }),
+    ]);
 
     await this.log(projectId, runId, "info", "executor",
       `ワークフロー完了。readyForDevin: ${readyForDevin}, ステータス: ${finalStatus}`);
