@@ -395,43 +395,24 @@ export class StepHandlers {
       where: { id: projectId },
     });
 
-    // Collect all artifacts for export
-    const artifacts = [];
+    // Collect all artifacts for export (fetch in parallel)
+    const artifactDefs = [
+      { type: "requirements_final", filename: "requirements_final.md" },
+      { type: "specification_final", filename: "specification_final.md" },
+      { type: "conflict_report", filename: "conflict_report.json" },
+      { type: "spec_score_report", filename: "spec_score_report.json" },
+      { type: "spec_test_report", filename: "spec_test_report.json" },
+      { type: "ui_navigation_diagram_mermaid", filename: "ui_navigation_diagram.mmd" },
+      { type: "ui_navigation_diagram_png", filename: "ui_navigation_diagram.png" },
+    ];
 
-    const requirementsFinal = await this.getLatestArtifact(projectId, "requirements_final");
-    if (requirementsFinal) {
-      artifacts.push({ filename: "requirements_final.md", content: requirementsFinal });
-    }
+    const fetched = await Promise.all(
+      artifactDefs.map((d) => this.getLatestArtifact(projectId, d.type)),
+    );
 
-    const specFinal = await this.getLatestArtifact(projectId, "specification_final");
-    if (specFinal) {
-      artifacts.push({ filename: "specification_final.md", content: specFinal });
-    }
-
-    const conflictReport = await this.getLatestArtifact(projectId, "conflict_report");
-    if (conflictReport) {
-      artifacts.push({ filename: "conflict_report.json", content: conflictReport });
-    }
-
-    const scoreReport = await this.getLatestArtifact(projectId, "spec_score_report");
-    if (scoreReport) {
-      artifacts.push({ filename: "spec_score_report.json", content: scoreReport });
-    }
-
-    const testReport = await this.getLatestArtifact(projectId, "spec_test_report");
-    if (testReport) {
-      artifacts.push({ filename: "spec_test_report.json", content: testReport });
-    }
-
-    const uiDiagram = await this.getLatestArtifact(projectId, "ui_navigation_diagram_mermaid");
-    if (uiDiagram) {
-      artifacts.push({ filename: "ui_navigation_diagram.mmd", content: uiDiagram });
-    }
-
-    const uiPng = await this.getLatestArtifact(projectId, "ui_navigation_diagram_png");
-    if (uiPng) {
-      artifacts.push({ filename: "ui_navigation_diagram.png", content: uiPng });
-    }
+    const artifacts = artifactDefs
+      .map((d, i) => ({ filename: d.filename, content: fetched[i] }))
+      .filter((a) => a.content);
 
     // Create export directory
     const exportDir = join(process.cwd(), "tmp", "exports");
@@ -449,8 +430,10 @@ export class StepHandlers {
 
   /** Step 20: Devin Gate */
   async devinGate(projectId: string, runId: string, stepId: string): Promise<void> {
-    const scoreArtifact = await this.getLatestArtifact(projectId, "spec_score_report");
-    const spec = await this.getLatestArtifact(projectId, "specification_final");
+    const [scoreArtifact, spec] = await Promise.all([
+      this.getLatestArtifact(projectId, "spec_score_report"),
+      this.getLatestArtifact(projectId, "specification_final"),
+    ]);
 
     let readyForDevin = false;
     let gateDetails = "";
@@ -479,13 +462,14 @@ export class StepHandlers {
       }
     }
 
-    await this.upsertArtifact(projectId, "devin_gate_report", gateDetails, "gate");
-
-    await this.prisma.projectOutput.upsert({
-      where: { projectId },
-      create: { projectId, readyForDevin },
-      update: { readyForDevin },
-    });
+    await Promise.all([
+      this.upsertArtifact(projectId, "devin_gate_report", gateDetails, "gate"),
+      this.prisma.projectOutput.upsert({
+        where: { projectId },
+        create: { projectId, readyForDevin },
+        update: { readyForDevin },
+      }),
+    ]);
 
     await this.log(projectId, runId, "info", "step-20",
       `Devinゲート: readyForDevin=${readyForDevin}`);
@@ -542,11 +526,9 @@ export class StepHandlers {
     source: string,
     message: string,
   ): Promise<void> {
-    const run = await this.prisma.workflowRun.findUnique({ where: { id: runId } });
-    if (run) {
-      await this.prisma.workflowLog.create({
-        data: { projectId, workflowRunId: runId, logLevel, source, message },
-      });
-    }
+    // Skip redundant findUnique check - runId is always valid when called
+    await this.prisma.workflowLog.create({
+      data: { projectId, workflowRunId: runId, logLevel, source, message },
+    });
   }
 }

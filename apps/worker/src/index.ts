@@ -2,7 +2,7 @@ import { PrismaClient } from "@prisma/client";
 import { WorkflowExecutor } from "./executor";
 
 const prisma = new PrismaClient();
-const POLL_INTERVAL_MS = 3000;
+const POLL_INTERVAL_MS = 1000;
 
 async function pollForWork(): Promise<void> {
   // Find queued projects
