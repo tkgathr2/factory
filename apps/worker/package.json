@@ -4,18 +4,19 @@
   "private": true,
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "tsc",
+    "build": "esbuild src/index.ts --bundle --platform=node --target=node22 --outfile=dist/index.js --format=cjs --external:@prisma/client --external:.prisma/client",
     "start": "node dist/index.js",
     "typecheck": "tsc --noEmit",
     "lint": "echo 'no lint configured'"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
-    "@spec-engine/shared": "workspace:*",
-    "@spec-engine/engine": "workspace:*"
+    "@spec-engine/engine": "workspace:*",
+    "@spec-engine/shared": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
+    "esbuild": "^0.27.4",
     "tsx": "^4.19.0",
     "typescript": "^5.5.0"
   }
