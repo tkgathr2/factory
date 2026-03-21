@@ -42,8 +42,7 @@ COPY --from=builder /app/apps/worker/node_modules ./apps/worker/node_modules
 COPY --from=builder /app/packages/shared ./packages/shared
 COPY --from=builder /app/packages/spec-engine ./packages/spec-engine
 
-# Prisma client (generated in web, shared via node_modules)
-COPY --from=builder /app/apps/web/node_modules/.prisma ./apps/web/node_modules/.prisma
+# Prisma schema for migrations
 COPY --from=builder /app/apps/web/prisma ./apps/web/prisma
 
 # Startup script
