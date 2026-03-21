@@ -1,5 +1,6 @@
 #!/bin/sh
 cd /app/apps/web
-npx prisma migrate deploy
+prisma generate
+prisma migrate deploy
 cd /app
 exec node apps/worker/dist/index.js
