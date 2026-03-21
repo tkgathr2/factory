@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import type { RunReportResponse, ApproveDiagramRequest } from "@spec-engine/shared";
+import type { RunReportResponse, ApproveDiagramRequest, WorkflowLogItem } from "@spec-engine/shared";
 
 const STATUS_COLORS: Record<string, string> = {
   draft: "#999",
@@ -16,7 +16,9 @@ const STATUS_COLORS: Record<string, string> = {
   failed: "#dc2626",
 };
 
-const POLL_INTERVAL = 5000;
+/** Poll fast while running/queued, slower otherwise */
+const POLL_INTERVAL_ACTIVE = 2000;
+const POLL_INTERVAL_IDLE = 10000;
 
 const STATUS_LABELS: Record<string, string> = {
   draft: "下書き",
@@ -39,14 +41,48 @@ const STATUS_MESSAGES: Record<string, string> = {
   failed: "処理中にエラーが発生しました",
 };
 
+const STEP_LABELS: Record<string, string> = {
+  intake: "要件取込",
+  common_features_apply: "共通機能適用",
+  requirements_generate: "要件生成",
+  requirements_polish_1: "要件磨き上げ1",
+  requirements_polish_2: "要件磨き上げ2",
+  requirements_audit_1: "要件監査1",
+  requirements_audit_2: "要件監査2",
+  specification_generate: "仕様書生成",
+  specification_polish_1: "仕様書磨き上げ1",
+  specification_polish_2: "仕様書磨き上げ2",
+  specification_audit_1: "仕様書監査1",
+  specification_audit_2: "仕様書監査2",
+  specification_id_assign: "仕様書ID付与",
+  conflict_check: "矛盾検出",
+  spec_score: "仕様スコア",
+  spec_test: "仕様テスト",
+  spec_feedback: "仕様フィードバック",
+  ui_navigation_diagram: "UI画面遷移図",
+  export_spec: "仕様書エクスポート",
+  devin_gate: "Devinゲート",
+};
+
+function formatElapsed(sec: number): string {
+  if (sec <= 0) return "0秒";
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  return m > 0 ? `${m}分${s}秒` : `${s}秒`;
+}
+
 export default function ProjectMonitorPage() {
   const params = useParams();
   const projectId = params.id as string;
 
   const [report, setReport] = useState<RunReportResponse | null>(null);
+  const [logs, setLogs] = useState<WorkflowLogItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [actionPending, setActionPending] = useState(false);
+  const [elapsedSec, setElapsedSec] = useState(0);
+  const logEndRef = useRef<HTMLDivElement>(null);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const fetchReport = useCallback(async () => {
     try {
@@ -62,11 +98,52 @@ export default function ProjectMonitorPage() {
     }
   }, [projectId]);
 
+  const fetchLogs = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/projects/${projectId}/logs?limit=30`);
+      if (!res.ok) return;
+      const data = await res.json();
+      setLogs(data.logs.reverse());
+    } catch {
+      // ignore log fetch errors
+    }
+  }, [projectId]);
+
+  // Adaptive polling: fast when active, slow when idle
   useEffect(() => {
     fetchReport();
-    const interval = setInterval(fetchReport, POLL_INTERVAL);
-    return () => clearInterval(interval);
-  }, [fetchReport]);
+    fetchLogs();
+
+    const isActive = report?.project.status === "running" || report?.project.status === "queued";
+    const interval = isActive ? POLL_INTERVAL_ACTIVE : POLL_INTERVAL_IDLE;
+
+    const id = setInterval(() => {
+      fetchReport();
+      fetchLogs();
+    }, interval);
+    return () => clearInterval(id);
+  }, [fetchReport, fetchLogs, report?.project.status]);
+
+  // Elapsed time counter for running state
+  useEffect(() => {
+    if (report?.project.status === "running" || report?.project.status === "queued") {
+      if (report.totalRuntimeSec !== null) {
+        setElapsedSec(report.totalRuntimeSec);
+      }
+      timerRef.current = setInterval(() => setElapsedSec((s) => s + 1), 1000);
+      return () => { if (timerRef.current) clearInterval(timerRef.current); };
+    } else {
+      if (timerRef.current) clearInterval(timerRef.current);
+      if (report?.totalRuntimeSec !== null && report?.totalRuntimeSec !== undefined) {
+        setElapsedSec(report.totalRuntimeSec);
+      }
+    }
+  }, [report?.project.status, report?.totalRuntimeSec]);
+
+  // Auto-scroll logs
+  useEffect(() => {
+    logEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [logs]);
 
   async function handleStart() {
     setActionPending(true);
@@ -171,32 +248,54 @@ export default function ProjectMonitorPage() {
         </div>
       </div>
 
-      {/* Status Banner */}
+      {/* Status Banner - Active Processing */}
       {(project.status === "queued" || project.status === "running") && (
         <div style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "0.75rem",
-          padding: "0.75rem 1rem",
+          padding: "1rem",
           background: project.status === "running" ? "#eff6ff" : "#fffbeb",
           border: `1px solid ${project.status === "running" ? "#bfdbfe" : "#fde68a"}`,
           borderRadius: "8px",
           marginBottom: "1rem",
         }}>
-          <span style={{
-            display: "inline-block",
-            width: "12px",
-            height: "12px",
-            borderRadius: "50%",
-            background: project.status === "running" ? "#3b82f6" : "#f59e0b",
-            animation: "pulse 1.5s ease-in-out infinite",
-          }} />
-          <span style={{ fontSize: "0.9rem", color: project.status === "running" ? "#1d4ed8" : "#92400e", fontWeight: 500 }}>
-            {STATUS_MESSAGES[project.status]}
-          </span>
-          <span style={{ fontSize: "0.8rem", color: "#999", marginLeft: "auto" }}>
-            5秒ごとに自動更新中
-          </span>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "0.75rem" }}>
+            <span className="spinner" style={{
+              display: "inline-block",
+              width: "20px",
+              height: "20px",
+              border: `3px solid ${project.status === "running" ? "#bfdbfe" : "#fde68a"}`,
+              borderTopColor: project.status === "running" ? "#3b82f6" : "#f59e0b",
+              borderRadius: "50%",
+              animation: "spin 0.8s linear infinite",
+            }} />
+            <span style={{ fontSize: "0.95rem", color: project.status === "running" ? "#1d4ed8" : "#92400e", fontWeight: 600 }}>
+              {STATUS_MESSAGES[project.status]}
+            </span>
+            <span style={{ fontSize: "0.8rem", color: "#999", marginLeft: "auto" }}>
+              {formatElapsed(elapsedSec)} | 2秒ごとに自動更新中
+            </span>
+          </div>
+
+          {/* Step progress bar with step labels */}
+          {project.status === "running" && report.project.latestStepStatus && (
+            <div style={{ marginBottom: "0.5rem" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.25rem" }}>
+                <span style={{ fontSize: "0.85rem", fontWeight: 600, color: "#1d4ed8" }}>
+                  ステップ {report.project.latestStepStatus.stepOrder}/20: {STEP_LABELS[report.project.latestStepStatus.stepKey] ?? report.project.latestStepStatus.stepKey}
+                </span>
+                <span style={{ fontSize: "0.85rem", fontWeight: 700, color: "#1d4ed8" }}>{project.progressPercent}%</span>
+              </div>
+              <div style={{ height: "8px", background: "#dbeafe", borderRadius: "4px", overflow: "hidden" }}>
+                <div style={{
+                  width: `${project.progressPercent}%`,
+                  height: "100%",
+                  background: "linear-gradient(90deg, #3b82f6, #60a5fa)",
+                  borderRadius: "4px",
+                  transition: "width 0.5s ease",
+                  animation: "shimmer 1.5s ease-in-out infinite",
+                }} />
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -254,6 +353,39 @@ export default function ProjectMonitorPage() {
         </div>
       )}
 
+      {/* Real-time Activity Log */}
+      {(project.status === "running" || project.status === "queued") && logs.length > 0 && (
+        <div style={{
+          marginBottom: "1rem",
+          border: "1px solid #e5e7eb",
+          borderRadius: "8px",
+          background: "#1e1e1e",
+          maxHeight: "200px",
+          overflow: "auto",
+        }}>
+          <div style={{ padding: "0.5rem 0.75rem", borderBottom: "1px solid #333", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+            <span style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#22c55e", animation: "pulse 1.5s ease-in-out infinite" }} />
+            <span style={{ fontSize: "0.75rem", color: "#9ca3af", fontWeight: 600 }}>LIVE LOG</span>
+          </div>
+          <div style={{ padding: "0.5rem 0.75rem", fontFamily: "monospace", fontSize: "0.75rem" }}>
+            {logs.map((log, i) => (
+              <div key={i} style={{
+                padding: "0.15rem 0",
+                color: log.logLevel === "error" ? "#f87171" : log.logLevel === "warn" ? "#fbbf24" : "#d1d5db",
+                borderBottom: "1px solid #2a2a2a",
+              }}>
+                <span style={{ color: "#6b7280", marginRight: "0.5rem" }}>
+                  {new Date(log.createdAt).toLocaleTimeString("ja-JP")}
+                </span>
+                <span style={{ color: "#60a5fa", marginRight: "0.5rem" }}>[{log.source}]</span>
+                {log.message}
+              </div>
+            ))}
+            <div ref={logEndRef} />
+          </div>
+        </div>
+      )}
+
       {/* Control Buttons */}
       <div className="button-row" style={{ display: "flex", gap: "0.5rem", marginBottom: "1.5rem" }}>
         {project.status === "draft" && (
@@ -304,20 +436,35 @@ export default function ProjectMonitorPage() {
               <span style={{ fontSize: "0.85rem" }}>ステップ {report.project.latestStepStatus?.stepOrder ?? "-"}/20</span>
               <span style={{ fontSize: "0.85rem", fontWeight: 600 }}>{project.progressPercent}%</span>
             </div>
-            <div style={{ height: "10px", background: "#e5e7eb", borderRadius: "5px" }}>
-              <div style={{ width: `${project.progressPercent}%`, height: "100%", background: "#3b82f6", borderRadius: "5px", transition: "width 0.3s" }} />
+            <div style={{ height: "10px", background: "#e5e7eb", borderRadius: "5px", overflow: "hidden" }}>
+              <div style={{
+                width: `${project.progressPercent}%`,
+                height: "100%",
+                background: project.status === "running" ? "linear-gradient(90deg, #3b82f6, #60a5fa)" : "#3b82f6",
+                borderRadius: "5px",
+                transition: "width 0.5s ease",
+                ...(project.status === "running" ? { animation: "shimmer 1.5s ease-in-out infinite" } : {}),
+              }} />
             </div>
           </div>
           {report.project.latestStepStatus && (
             <p style={{ fontSize: "0.85rem", color: "#666", margin: "0.5rem 0 0" }}>
-              現在: {report.project.latestStepStatus.stepKey} ({report.project.latestStepStatus.status})
+              現在: {STEP_LABELS[report.project.latestStepStatus.stepKey] ?? report.project.latestStepStatus.stepKey}
+              <span style={{
+                marginLeft: "0.5rem",
+                padding: "0.1rem 0.4rem",
+                borderRadius: "3px",
+                fontSize: "0.75rem",
+                background: report.project.latestStepStatus.status === "running" ? "#dbeafe" : report.project.latestStepStatus.status === "success" ? "#dcfce7" : "#fef3c7",
+                color: report.project.latestStepStatus.status === "running" ? "#1d4ed8" : report.project.latestStepStatus.status === "success" ? "#166534" : "#92400e",
+              }}>
+                {report.project.latestStepStatus.status === "running" ? "実行中" : report.project.latestStepStatus.status === "success" ? "完了" : report.project.latestStepStatus.status}
+              </span>
             </p>
           )}
-          {report.totalRuntimeSec !== null && (
-            <p style={{ fontSize: "0.85rem", color: "#666", margin: "0.25rem 0 0" }}>
-              実行時間: {Math.floor(report.totalRuntimeSec / 60)}分 {report.totalRuntimeSec % 60}秒
-            </p>
-          )}
+          <p style={{ fontSize: "0.85rem", color: "#666", margin: "0.25rem 0 0" }}>
+            実行時間: {formatElapsed(elapsedSec)}
+          </p>
         </div>
 
         {/* Loop Panel */}

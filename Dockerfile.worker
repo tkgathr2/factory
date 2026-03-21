@@ -1,0 +1,53 @@
+FROM node:22-alpine AS base
+RUN apk add --no-cache openssl
+RUN corepack enable && corepack prepare pnpm@9.15.1 --activate
+WORKDIR /app
+
+# --- Dependencies ---
+FROM base AS deps
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
+COPY apps/web/package.json apps/web/package.json
+COPY apps/worker/package.json apps/worker/package.json
+COPY packages/shared/package.json packages/shared/package.json
+COPY packages/spec-engine/package.json packages/spec-engine/package.json
+RUN pnpm install --frozen-lockfile
+
+# --- Build ---
+FROM base AS builder
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/apps/web/node_modules ./apps/web/node_modules
+COPY --from=deps /app/apps/worker/node_modules ./apps/worker/node_modules
+COPY --from=deps /app/packages/shared/node_modules ./packages/shared/node_modules
+COPY --from=deps /app/packages/spec-engine/node_modules ./packages/spec-engine/node_modules
+COPY . .
+RUN pnpm --filter @spec-engine/shared build 2>/dev/null || true
+RUN pnpm --filter @spec-engine/engine build 2>/dev/null || true
+RUN cd apps/web && npx prisma generate
+RUN pnpm --filter worker build
+
+# --- Runner ---
+FROM node:22-alpine AS runner
+RUN apk add --no-cache openssl
+WORKDIR /app
+ENV NODE_ENV=production
+
+# Install prisma CLI for migrations
+RUN npm install -g prisma@5.22.0
+
+# Copy built worker
+COPY --from=builder /app/apps/worker/dist ./apps/worker/dist
+COPY --from=builder /app/apps/worker/package.json ./apps/worker/package.json
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/apps/worker/node_modules ./apps/worker/node_modules
+COPY --from=builder /app/packages/shared ./packages/shared
+COPY --from=builder /app/packages/spec-engine ./packages/spec-engine
+
+# Prisma client (generated in web, shared via node_modules)
+COPY --from=builder /app/apps/web/node_modules/.prisma ./apps/web/node_modules/.prisma
+COPY --from=builder /app/apps/web/prisma ./apps/web/prisma
+
+# Startup script
+COPY scripts/start-worker.sh /app/start.sh
+RUN chmod +x /app/start.sh
+
+CMD ["/app/start.sh"]
