@@ -91,7 +91,23 @@ export default function NewProjectPage() {
 
   return (
     <main style={{ padding: "2rem", fontFamily: "system-ui, sans-serif", maxWidth: "700px", margin: "0 auto" }}>
-      <h1 style={{ fontSize: "clamp(1.2rem, 4vw, 1.5rem)", marginBottom: "1.5rem" }}>新規案件作成</h1>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
+        <h1 style={{ fontSize: "clamp(1.2rem, 4vw, 1.5rem)", margin: 0 }}>新規案件作成</h1>
+        <a
+          href="/projects"
+          style={{
+            padding: "0.5rem 1rem",
+            background: "#6b7280",
+            color: "#fff",
+            borderRadius: "6px",
+            textDecoration: "none",
+            fontSize: "0.85rem",
+            fontWeight: 500,
+          }}
+        >
+          過去の案件一覧
+        </a>
+      </div>
 
       {error && (
         <div style={{ padding: "0.75rem", background: "#fef2f2", border: "1px solid #fecaca", borderRadius: "6px", marginBottom: "1rem", color: "#dc2626" }}>

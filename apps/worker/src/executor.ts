@@ -20,6 +20,7 @@ import {
 import type { AiProvider } from "@spec-engine/engine";
 import type { ScoreCategoryMap } from "@spec-engine/shared";
 import { StepHandlers } from "./step-handlers";
+import { sendSlackNotification } from "./slack-notifier";
 
 /** Steps that can be run in parallel as pairs */
 const PARALLEL_STEP_PAIRS: Record<number, number> = {
@@ -256,16 +257,26 @@ export class WorkflowExecutor {
           ]);
 
           // Mark project as failed
-          await Promise.all([
-            this.prisma.project.update({
-              where: { id: projectId },
-              data: { status: "failed", stopReason: `step_${currentStep}_failed` },
-            }),
-            this.prisma.workflowRun.update({
-              where: { id: run.id },
-              data: { status: "failed", endedAt: new Date() },
-            }),
-          ]);
+          const failedProject = await this.prisma.project.update({
+            where: { id: projectId },
+            data: { status: "failed", stopReason: `step_${currentStep}_failed` },
+          });
+          await this.prisma.workflowRun.update({
+            where: { id: run.id },
+            data: { status: "failed", endedAt: new Date() },
+          });
+
+          // Slack通知（失敗）
+          await sendSlackNotification({
+            projectTitle: failedProject.title,
+            projectCode: failedProject.projectCode,
+            projectId,
+            status: "failed",
+            score: failedProject.currentScore,
+            totalSteps: 20,
+            runtimeSec: null,
+            loopCount: failedProject.loopCount,
+          });
           return;
         }
       }
@@ -531,6 +542,26 @@ export class WorkflowExecutor {
 
     await this.log(projectId, runId, "info", "executor",
       `ワークフロー完了。readyForDevin: ${readyForDevin}, ステータス: ${finalStatus}`);
+
+    // Slack通知
+    const latestRun = await this.prisma.workflowRun.findFirst({
+      where: { projectId },
+      orderBy: { createdAt: "desc" },
+    });
+    const runtimeSec = latestRun?.startedAt
+      ? Math.round((Date.now() - latestRun.startedAt.getTime()) / 1000)
+      : null;
+
+    await sendSlackNotification({
+      projectTitle: project.title,
+      projectCode: project.projectCode,
+      projectId,
+      status: finalStatus as "completed" | "ready_for_devin",
+      score: project.currentScore,
+      totalSteps: 20,
+      runtimeSec,
+      loopCount: project.loopCount,
+    });
   }
 
   private async getLatestArtifactContent(projectId: string, artifactType: string): Promise<string> {
