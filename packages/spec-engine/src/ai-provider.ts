@@ -168,9 +168,81 @@ id, email, password_hash, created_at
 
   private mockMermaidDiagram(): string {
     return `flowchart TD
-    UI001[ログイン画面] --> UI002[ダッシュボード]
-    UI001 --> UI001_ERR[ログインエラー]
-    UI001_ERR --> UI001
+    subgraph auth["認証フロー"]
+        UI001["UI-001\nログイン画面"]
+        UI001_REG["UI-001a\n新規登録フォーム"]
+        UI001_ERR["エラー表示\n認証失敗"]
+        UI001_RESET["UI-001b\nパスワードリセット"]
+    end
+
+    subgraph main["メイン機能"]
+        UI002["UI-002\nダッシュボード"]
+        UI003["UI-003\nユーザー設定"]
+        UI004["UI-004\nプロフィール編集"]
+    end
+
+    subgraph data["データ管理"]
+        UI005["UI-005\nデータ一覧"]
+        UI006["UI-006\nデータ詳細"]
+        UI007["UI-007\n新規作成フォーム"]
+        UI008["UI-008\n編集フォーム"]
+        UI009["UI-009\n削除確認ダイアログ"]
+    end
+
+    subgraph report["レポート"]
+        UI010["UI-010\nレポート一覧"]
+        UI011["UI-011\nレポート詳細\nグラフ表示"]
+        UI012["UI-012\nCSVエクスポート"]
+    end
+
+    %% 認証フロー
+    UI001 -->|"ログイン成功"| UI002
+    UI001 -->|"認証失敗"| UI001_ERR
+    UI001_ERR -->|"再試行"| UI001
+    UI001 -->|"新規登録"| UI001_REG
+    UI001_REG -->|"登録完了"| UI002
+    UI001_REG -->|"戻る"| UI001
+    UI001 -->|"パスワード忘れ"| UI001_RESET
+    UI001_RESET -->|"リセット完了"| UI001
+
+    %% メイン画面間の遷移
+    UI002 -->|"設定"| UI003
+    UI002 -->|"プロフィール"| UI004
+    UI003 -->|"戻る"| UI002
+    UI004 -->|"保存/戻る"| UI002
+
+    %% データ管理フロー
+    UI002 -->|"データ管理"| UI005
+    UI005 -->|"詳細表示"| UI006
+    UI005 -->|"新規作成"| UI007
+    UI006 -->|"編集"| UI008
+    UI006 -->|"削除"| UI009
+    UI007 -->|"保存完了"| UI005
+    UI008 -->|"更新完了"| UI006
+    UI009 -->|"確定"| UI005
+    UI009 -->|"キャンセル"| UI006
+    UI005 -->|"戻る"| UI002
+    UI006 -->|"一覧に戻る"| UI005
+
+    %% レポートフロー
+    UI002 -->|"レポート"| UI010
+    UI010 -->|"詳細"| UI011
+    UI011 -->|"エクスポート"| UI012
+    UI010 -->|"戻る"| UI002
+    UI011 -->|"一覧に戻る"| UI010
+
+    %% ログアウト
+    UI002 -->|"ログアウト"| UI001
+    UI003 -->|"ログアウト"| UI001
+
+    %% スタイリング
+    style auth fill:#fff3e0,stroke:#ff9800,stroke-width:2px
+    style main fill:#e3f2fd,stroke:#2196f3,stroke-width:2px
+    style data fill:#e8f5e9,stroke:#4caf50,stroke-width:2px
+    style report fill:#f3e5f5,stroke:#9c27b0,stroke-width:2px
+    style UI001 fill:#fff9c4,stroke:#f9a825
+    style UI002 fill:#bbdefb,stroke:#1976d2
+    style UI001_ERR fill:#ffcdd2,stroke:#e53935
 `;
   }
 }
