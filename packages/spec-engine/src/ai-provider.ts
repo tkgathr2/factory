@@ -27,6 +27,15 @@ export class MockAiProvider implements AiProvider {
   async call(request: AiRequest): Promise<AiResponse> {
     const prompt = request.prompt.toLowerCase();
 
+    // ui_navigation_diagram must be checked BEFORE "要件" since spec content contains "要件"
+    if (prompt.includes("ui_navigation_diagram") || prompt.includes("画面遷移")) {
+      return {
+        content: this.mockMermaidDiagram(),
+        model: "mock",
+        tokensUsed: 0,
+      };
+    }
+
     if (prompt.includes("requirements_generate") || prompt.includes("要件")) {
       return {
         content: this.mockRequirements(),
@@ -78,14 +87,6 @@ export class MockAiProvider implements AiProvider {
     if (prompt.includes("specification_improve") || prompt.includes("改善")) {
       return {
         content: request.prompt.includes("INPUT:") ? request.prompt.split("INPUT:")[1] : this.mockSpecification(),
-        model: "mock",
-        tokensUsed: 0,
-      };
-    }
-
-    if (prompt.includes("ui_navigation_diagram") || prompt.includes("画面遷移")) {
-      return {
-        content: this.mockMermaidDiagram(),
         model: "mock",
         tokensUsed: 0,
       };
