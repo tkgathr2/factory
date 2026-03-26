@@ -81,8 +81,11 @@ export default function ProjectMonitorPage() {
   const [error, setError] = useState("");
   const [actionPending, setActionPending] = useState(false);
   const [elapsedSec, setElapsedSec] = useState(0);
+  const [diagramSvg, setDiagramSvg] = useState<string>("");
+  const [diagramLoading, setDiagramLoading] = useState(false);
   const logEndRef = useRef<HTMLDivElement>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const mermaidInitRef = useRef(false);
 
   const fetchReport = useCallback(async () => {
     try {
@@ -144,6 +147,61 @@ export default function ProjectMonitorPage() {
   useEffect(() => {
     logEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [logs]);
+
+  // Fetch and render Mermaid diagram when awaiting_approval
+  useEffect(() => {
+    if (report?.project.status !== "awaiting_approval") {
+      setDiagramSvg("");
+      return;
+    }
+    if (diagramSvg || diagramLoading) return;
+
+    setDiagramLoading(true);
+    (async () => {
+      try {
+        const res = await fetch(`/api/projects/${projectId}/artifacts/ui_navigation_diagram_mermaid`);
+        if (!res.ok) return;
+        const data = await res.json();
+        const mermaidSource = data.content;
+        if (!mermaidSource) return;
+
+        // Dynamically load mermaid.js
+        if (!mermaidInitRef.current) {
+          const script = document.createElement("script");
+          script.src = "https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js";
+          script.onload = () => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const mermaid = (window as any).mermaid;
+            mermaid.initialize({ startOnLoad: false, theme: "default" });
+            mermaidInitRef.current = true;
+            renderDiagram(mermaid, mermaidSource);
+          };
+          document.head.appendChild(script);
+        } else {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const mermaid = (window as any).mermaid;
+          renderDiagram(mermaid, mermaidSource);
+        }
+      } catch {
+        // ignore
+      } finally {
+        setDiagramLoading(false);
+      }
+    })();
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async function renderDiagram(mermaid: any, source: string) {
+      try {
+        const { svg } = await mermaid.render("diagram-" + Date.now(), source);
+        setDiagramSvg(svg);
+      } catch {
+        // If mermaid render fails, show the raw source
+        setDiagramSvg(`<pre style="background:#f9fafb;padding:1rem;border-radius:8px;overflow:auto;font-size:0.85rem">${source}</pre>`);
+      } finally {
+        setDiagramLoading(false);
+      }
+    }
+  }, [report?.project.status, projectId, diagramSvg, diagramLoading]);
 
   async function handleStart() {
     setActionPending(true);
@@ -301,19 +359,43 @@ export default function ProjectMonitorPage() {
 
       {project.status === "awaiting_approval" && (
         <div style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "0.75rem",
-          padding: "0.75rem 1rem",
+          padding: "1rem",
           background: "#f5f3ff",
           border: "1px solid #c4b5fd",
           borderRadius: "8px",
           marginBottom: "1rem",
         }}>
-          <span style={{ fontSize: "1.2rem" }}>&#9888;</span>
-          <span style={{ fontSize: "0.9rem", color: "#5b21b6", fontWeight: 500 }}>
-            {STATUS_MESSAGES[project.status]}
-          </span>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1rem" }}>
+            <span style={{ fontSize: "1.2rem" }}>&#9888;</span>
+            <span style={{ fontSize: "0.9rem", color: "#5b21b6", fontWeight: 500 }}>
+              {STATUS_MESSAGES[project.status]}
+            </span>
+          </div>
+          {/* Mermaid Diagram Display */}
+          <div style={{
+            background: "#fff",
+            border: "1px solid #e5e7eb",
+            borderRadius: "8px",
+            padding: "1.5rem",
+            textAlign: "center",
+            minHeight: "200px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}>
+            {diagramLoading && (
+              <span style={{ color: "#9ca3af", fontSize: "0.9rem" }}>図を読み込み中...</span>
+            )}
+            {diagramSvg && (
+              <div
+                dangerouslySetInnerHTML={{ __html: diagramSvg }}
+                style={{ width: "100%", overflow: "auto" }}
+              />
+            )}
+            {!diagramLoading && !diagramSvg && (
+              <span style={{ color: "#9ca3af", fontSize: "0.9rem" }}>図を読み込めませんでした</span>
+            )}
+          </div>
         </div>
       )}
 
