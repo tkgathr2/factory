@@ -83,6 +83,9 @@ export default function ProjectMonitorPage() {
   const [elapsedSec, setElapsedSec] = useState(0);
   const [diagramSvg, setDiagramSvg] = useState<string>("");
   const [diagramLoading, setDiagramLoading] = useState(false);
+  const [editingTitle, setEditingTitle] = useState(false);
+  const [titleDraft, setTitleDraft] = useState("");
+  const [titleSaving, setTitleSaving] = useState(false);
   const logEndRef = useRef<HTMLDivElement>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const mermaidInitRef = useRef(false);
@@ -233,6 +236,26 @@ export default function ProjectMonitorPage() {
     }
   }
 
+  async function handleSaveTitle() {
+    if (!titleDraft.trim() || titleSaving) return;
+    setTitleSaving(true);
+    try {
+      const res = await fetch(`/api/projects/${projectId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: titleDraft.trim() }),
+      });
+      if (res.ok) {
+        await fetchReport();
+        setEditingTitle(false);
+      }
+    } catch {
+      // ignore
+    } finally {
+      setTitleSaving(false);
+    }
+  }
+
   async function handleApprove(approved: boolean) {
     setActionPending(true);
     try {
@@ -287,7 +310,47 @@ export default function ProjectMonitorPage() {
           <Link href="/projects" style={{ color: "#0070f3", textDecoration: "none", fontSize: "0.85rem" }}>
             &larr; 案件一覧
           </Link>
-          <h1 style={{ fontSize: "clamp(1.2rem, 4vw, 1.5rem)", margin: "0.25rem 0 0" }}>{project.title}</h1>
+          {editingTitle ? (
+            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", margin: "0.25rem 0 0" }}>
+              <input
+                value={titleDraft}
+                onChange={(e) => setTitleDraft(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") handleSaveTitle(); if (e.key === "Escape") setEditingTitle(false); }}
+                autoFocus
+                style={{
+                  fontSize: "clamp(1.2rem, 4vw, 1.5rem)",
+                  fontWeight: 700,
+                  border: "1px solid #d1d5db",
+                  borderRadius: "6px",
+                  padding: "0.25rem 0.5rem",
+                  width: "100%",
+                  maxWidth: "400px",
+                }}
+              />
+              <button onClick={handleSaveTitle} disabled={titleSaving}
+                style={{ padding: "0.3rem 0.75rem", background: "#22c55e", color: "#fff", border: "none", borderRadius: "4px", cursor: "pointer", fontSize: "0.8rem", fontWeight: 600 }}>
+                {titleSaving ? "..." : "保存"}
+              </button>
+              <button onClick={() => setEditingTitle(false)}
+                style={{ padding: "0.3rem 0.75rem", background: "#f3f4f6", color: "#374151", border: "1px solid #d1d5db", borderRadius: "4px", cursor: "pointer", fontSize: "0.8rem" }}>
+                キャンセル
+              </button>
+            </div>
+          ) : (
+            <h1
+              onClick={() => { setTitleDraft(project.title); setEditingTitle(true); }}
+              title="クリックでタイトルを編集"
+              style={{
+                fontSize: "clamp(1.2rem, 4vw, 1.5rem)",
+                margin: "0.25rem 0 0",
+                cursor: "pointer",
+                borderBottom: "1px dashed #d1d5db",
+                paddingBottom: "2px",
+              }}
+            >
+              {project.title}
+            </h1>
+          )}
         </div>
         <div className="status-row" style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
           <span

@@ -3,6 +3,20 @@ import { prisma } from "@/lib/prisma";
 import { generateProjectCode } from "@spec-engine/engine";
 import type { CreateProjectRequest, CreateProjectResponse, ListProjectsResponse } from "@spec-engine/shared";
 
+/** rawRequirementsからタイトルを自動生成 */
+function generateTitle(rawRequirements: string): string {
+  const text = rawRequirements.trim();
+  if (!text) return "無題の案件";
+
+  // Take first line or first sentence
+  const firstLine = text.split(/[\n。！？!?]/)[0].trim();
+  if (!firstLine) return "無題の案件";
+
+  // Truncate to reasonable length
+  if (firstLine.length <= 30) return firstLine;
+  return firstLine.slice(0, 30) + "...";
+}
+
 /** POST /api/projects — Create project */
 export async function POST(request: NextRequest) {
   try {
@@ -17,10 +31,15 @@ export async function POST(request: NextRequest) {
 
     const projectCode = generateProjectCode();
 
+    // Auto-generate title from rawRequirements if not provided
+    const autoTitle = body.title?.trim()
+      ? body.title.trim()
+      : generateTitle(body.rawRequirements);
+
     const project = await prisma.project.create({
       data: {
         projectCode,
-        title: body.title || "無題の案件",
+        title: autoTitle,
         status: "draft",
         inputs: {
           create: {

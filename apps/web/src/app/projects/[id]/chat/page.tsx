@@ -21,6 +21,9 @@ export default function ChatPage() {
   const [sending, setSending] = useState(false);
   const [loading, setLoading] = useState(true);
   const [projectTitle, setProjectTitle] = useState("");
+  const [editingTitle, setEditingTitle] = useState(false);
+  const [titleDraft, setTitleDraft] = useState("");
+  const [titleSaving, setTitleSaving] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = useCallback(() => {
@@ -103,6 +106,27 @@ export default function ChatPage() {
     }
   }
 
+  async function handleSaveTitle() {
+    if (!titleDraft.trim() || titleSaving) return;
+    setTitleSaving(true);
+    try {
+      const res = await fetch(`/api/projects/${projectId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: titleDraft.trim() }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setProjectTitle(data.project.title);
+        setEditingTitle(false);
+      }
+    } catch {
+      // ignore
+    } finally {
+      setTitleSaving(false);
+    }
+  }
+
   async function handleStartWorkflow() {
     try {
       await fetch(`/api/projects/${projectId}/start`, { method: "POST" });
@@ -152,9 +176,33 @@ export default function ChatPage() {
           <Link href="/projects" style={{ color: "#0070f3", textDecoration: "none", fontSize: "0.85rem" }}>
             &larr; 案件一覧
           </Link>
-          <h1 style={{ fontSize: "1.1rem", margin: 0 }}>
-            {projectTitle || "要件ヒアリング"}
-          </h1>
+          {editingTitle ? (
+            <div style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}>
+              <input
+                value={titleDraft}
+                onChange={(e) => setTitleDraft(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") handleSaveTitle(); if (e.key === "Escape") setEditingTitle(false); }}
+                autoFocus
+                style={{ fontSize: "1rem", fontWeight: 700, border: "1px solid #d1d5db", borderRadius: "4px", padding: "0.2rem 0.4rem", width: "200px" }}
+              />
+              <button onClick={handleSaveTitle} disabled={titleSaving}
+                style={{ padding: "0.2rem 0.5rem", background: "#22c55e", color: "#fff", border: "none", borderRadius: "4px", cursor: "pointer", fontSize: "0.75rem", fontWeight: 600 }}>
+                {titleSaving ? "..." : "保存"}
+              </button>
+              <button onClick={() => setEditingTitle(false)}
+                style={{ padding: "0.2rem 0.5rem", background: "#f3f4f6", color: "#374151", border: "1px solid #d1d5db", borderRadius: "4px", cursor: "pointer", fontSize: "0.75rem" }}>
+                ×
+              </button>
+            </div>
+          ) : (
+            <h1
+              onClick={() => { setTitleDraft(projectTitle || "要件ヒアリング"); setEditingTitle(true); }}
+              title="クリックでタイトルを編集"
+              style={{ fontSize: "1.1rem", margin: 0, cursor: "pointer", borderBottom: "1px dashed #d1d5db", paddingBottom: "1px" }}
+            >
+              {projectTitle || "要件ヒアリング"}
+            </h1>
+          )}
         </div>
         <div style={{ display: "flex", gap: "0.5rem" }}>
           {hasEnoughContext && (
