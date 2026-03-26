@@ -293,6 +293,18 @@ export default function ProjectMonitorPage() {
     }
   }
 
+  async function handleRetryDiagram() {
+    setActionPending(true);
+    try {
+      await fetch(`/api/projects/${projectId}/retry-diagram`, { method: "POST" });
+      setDiagramSvg(null);
+      setDiagramLoading(true);
+      await fetchReport();
+    } finally {
+      setActionPending(false);
+    }
+  }
+
   async function handleApprove(approved: boolean) {
     setActionPending(true);
     try {
@@ -583,10 +595,18 @@ export default function ProjectMonitorPage() {
           </button>
         )}
         {project.status === "blocked" && (
-          <button onClick={handleResume} disabled={actionPending}
-            style={{ padding: "0.5rem 1rem", background: "#f59e0b", color: "#fff", border: "none", borderRadius: "6px", cursor: "pointer" }}>
-            再開
-          </button>
+          <>
+            <button onClick={handleResume} disabled={actionPending}
+              style={{ padding: "0.5rem 1rem", background: "#f59e0b", color: "#fff", border: "none", borderRadius: "6px", cursor: "pointer" }}>
+              再開
+            </button>
+            {project.loopStopReason === "diagram_rejected" && (
+              <button onClick={handleRetryDiagram} disabled={actionPending}
+                style={{ padding: "0.5rem 1rem", background: "#8b5cf6", color: "#fff", border: "none", borderRadius: "6px", cursor: "pointer" }}>
+                図をやり直す
+              </button>
+            )}
+          </>
         )}
         {project.status === "awaiting_approval" && (
           <>
@@ -655,7 +675,7 @@ export default function ProjectMonitorPage() {
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem", fontSize: "0.85rem" }}>
             <div>ループ回数: <strong>{project.loopCount ?? 0}</strong></div>
             <div>上限: <strong>7</strong></div>
-            {project.loopStopReason && <div style={{ gridColumn: "1 / -1" }}>停止理由: <strong>{project.loopStopReason === "soft_limit_reached" ? "ソフトリミット到達" : project.loopStopReason === "target_reached" ? "目標達成" : project.loopStopReason === "no_improvement" ? "改善なし" : project.loopStopReason}</strong></div>}
+            {project.loopStopReason && <div style={{ gridColumn: "1 / -1" }}>停止理由: <strong>{project.loopStopReason === "soft_limit_reached" ? "ソフトリミット到達" : project.loopStopReason === "target_reached" ? "目標達成" : project.loopStopReason === "no_improvement" ? "改善なし" : project.loopStopReason === "diagram_rejected" ? "図を却下" : project.loopStopReason}</strong></div>}
           </div>
         </div>
 
