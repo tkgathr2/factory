@@ -297,7 +297,7 @@ export default function ProjectMonitorPage() {
     setActionPending(true);
     try {
       await fetch(`/api/projects/${projectId}/retry-diagram`, { method: "POST" });
-      setDiagramSvg(null);
+      setDiagramSvg("");
       setDiagramLoading(true);
       await fetchReport();
     } finally {
