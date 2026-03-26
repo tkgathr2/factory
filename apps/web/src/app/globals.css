@@ -101,6 +101,15 @@ html, body {
   overflow-x: hidden;
 }
 
+/* Fix mobile viewport height bounce */
+html {
+  height: -webkit-fill-available;
+}
+body {
+  min-height: 100dvh;
+  min-height: -webkit-fill-available;
+}
+
 /* Touch-friendly tap targets */
 @media (max-width: 768px) {
   button, a[role="button"], .tap-target {

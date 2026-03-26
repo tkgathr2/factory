@@ -126,9 +126,16 @@ export default function ChatPage() {
     <div style={{
       display: "flex",
       flexDirection: "column",
-      height: "100vh",
+      height: "100dvh",
+      minHeight: "-webkit-fill-available",
       fontFamily: "system-ui, sans-serif",
       background: "#f9fafb",
+      position: "fixed",
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      overflow: "hidden",
     }}>
       {/* Header */}
       <div style={{
@@ -139,6 +146,7 @@ export default function ChatPage() {
         alignItems: "center",
         justifyContent: "space-between",
         flexShrink: 0,
+        zIndex: 10,
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
           <Link href="/projects" style={{ color: "#0070f3", textDecoration: "none", fontSize: "0.85rem" }}>
@@ -253,6 +261,7 @@ export default function ChatPage() {
         background: "#fff",
         borderTop: "1px solid #e5e7eb",
         flexShrink: 0,
+        zIndex: 10,
       }}>
         {hasEnoughContext && (
           <div style={{
