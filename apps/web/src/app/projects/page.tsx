@@ -15,6 +15,17 @@ const STATUS_COLORS: Record<string, string> = {
   failed: "#dc2626",
 };
 
+const STATUS_LABELS: Record<string, string> = {
+  draft: "下書き",
+  queued: "処理待ち",
+  running: "実行中",
+  awaiting_approval: "承認待ち",
+  blocked: "停止中",
+  completed: "完了",
+  ready_for_devin: "Devin実装可",
+  failed: "失敗",
+};
+
 export default function ProjectsPage() {
   const [projects, setProjects] = useState<ProjectListItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -90,7 +101,7 @@ export default function ProjectsPage() {
                       background: STATUS_COLORS[p.status] ?? "#999",
                     }}
                   >
-                    {p.status}
+                    {STATUS_LABELS[p.status] ?? p.status}
                   </span>
                 </td>
                 <td style={{ padding: "0.75rem 0.5rem" }}>

@@ -110,6 +110,13 @@ body {
   min-height: -webkit-fill-available;
 }
 
+/* Hide Mermaid.js error elements that leak into the DOM */
+#d-mermaid-error,
+.mermaid-error,
+[id^="d"][id$="mermaid-error"] {
+  display: none !important;
+}
+
 /* Touch-friendly tap targets */
 @media (max-width: 768px) {
   button, a[role="button"], .tap-target {

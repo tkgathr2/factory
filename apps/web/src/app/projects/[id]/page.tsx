@@ -64,6 +64,40 @@ const STEP_LABELS: Record<string, string> = {
   devin_gate: "Devinゲート",
 };
 
+const SCORE_CATEGORY_LABELS: Record<string, string> = {
+  completeness: "完全性",
+  clarity: "明確性",
+  implementability: "実装可能性",
+  bug_risk: "バグリスク",
+  consistency: "一貫性",
+  traceability: "追跡可能性",
+  testability: "テスト容易性",
+  extensibility: "拡張性",
+  operational_safety: "運用安全性",
+  ai_output_quality: "AI出力品質",
+};
+
+const ARTIFACT_TYPE_LABELS: Record<string, string> = {
+  intake_raw: "取込データ",
+  common_features_applied: "共通機能適用",
+  requirements_draft: "要件（下書き）",
+  requirements_polished_1: "要件（磨き上げ1）",
+  requirements_final: "要件（確定版）",
+  requirements_audit_1: "要件監査1",
+  requirements_audit_2: "要件監査2",
+  specification_draft: "仕様書（下書き）",
+  specification_polished_1: "仕様書（磨き上げ1）",
+  specification_final: "仕様書（確定版）",
+  specification_with_ids: "仕様書（ID付き）",
+  specification_audit_1: "仕様書監査1",
+  specification_audit_2: "仕様書監査2",
+  conflict_report: "矛盾検出レポート",
+  spec_score_report: "スコアレポート",
+  spec_test_report: "テストレポート",
+  ui_navigation_diagram_mermaid: "画面遷移図（Mermaid）",
+  ui_navigation_diagram_png: "画面遷移図（画像）",
+};
+
 function formatElapsed(sec: number): string {
   if (sec <= 0) return "0秒";
   const m = Math.floor(sec / 60);
@@ -198,8 +232,11 @@ export default function ProjectMonitorPage() {
         const { svg } = await mermaid.render("diagram-" + Date.now(), source);
         setDiagramSvg(svg);
       } catch {
-        // If mermaid render fails, show the raw source
-        setDiagramSvg(`<pre style="background:#f9fafb;padding:1rem;border-radius:8px;overflow:auto;font-size:0.85rem">${source}</pre>`);
+        // If mermaid render fails, show the raw source as pre-formatted text
+        // Also clean up any error elements mermaid.js may have added to the DOM
+        const escaped = source.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        setDiagramSvg(`<pre style="background:#f9fafb;padding:1rem;border-radius:8px;overflow:auto;font-size:0.85rem">${escaped}</pre>`);
+        document.querySelectorAll("#d-mermaid-error, .mermaid-error, [id^='diagram-']").forEach((el) => el.remove());
       } finally {
         setDiagramLoading(false);
       }
@@ -618,7 +655,7 @@ export default function ProjectMonitorPage() {
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem", fontSize: "0.85rem" }}>
             <div>ループ回数: <strong>{project.loopCount ?? 0}</strong></div>
             <div>上限: <strong>7</strong></div>
-            {project.loopStopReason && <div style={{ gridColumn: "1 / -1" }}>停止理由: <strong>{project.loopStopReason}</strong></div>}
+            {project.loopStopReason && <div style={{ gridColumn: "1 / -1" }}>停止理由: <strong>{project.loopStopReason === "soft_limit_reached" ? "ソフトリミット到達" : project.loopStopReason === "target_reached" ? "目標達成" : project.loopStopReason === "no_improvement" ? "改善なし" : project.loopStopReason}</strong></div>}
           </div>
         </div>
 
@@ -634,14 +671,14 @@ export default function ProjectMonitorPage() {
               <div className="score-categories" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.25rem", fontSize: "0.8rem" }}>
                 {Object.entries(scores.categories).map(([cat, val]) => (
                   <div key={cat} style={{ display: "flex", justifyContent: "space-between" }}>
-                    <span>{cat}</span>
+                    <span>{SCORE_CATEGORY_LABELS[cat] ?? cat}</span>
                     <span style={{ fontWeight: 600, color: (val as number) >= 80 ? "#22c55e" : "#ef4444" }}>{val as number}</span>
                   </div>
                 ))}
               </div>
               {report.scoreDelta !== null && (
                 <p style={{ fontSize: "0.8rem", color: report.scoreDelta >= 0 ? "#22c55e" : "#ef4444", marginTop: "0.5rem" }}>
-                  Delta: {report.scoreDelta >= 0 ? "+" : ""}{report.scoreDelta}
+                  差分: {report.scoreDelta >= 0 ? "+" : ""}{report.scoreDelta}
                 </p>
               )}
             </>
@@ -678,7 +715,7 @@ export default function ProjectMonitorPage() {
             <div className="artifact-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "0.5rem" }}>
               {artifactsSummary.map((a) => (
                 <div key={a.artifactType} style={{ padding: "0.5rem", background: "#f9fafb", borderRadius: "4px", fontSize: "0.8rem" }}>
-                  <div style={{ fontWeight: 600 }}>{a.artifactType}</div>
+                  <div style={{ fontWeight: 600 }}>{ARTIFACT_TYPE_LABELS[a.artifactType] ?? a.artifactType}</div>
                   <div style={{ color: "#999" }}>v{a.versionNo}</div>
                 </div>
               ))}
